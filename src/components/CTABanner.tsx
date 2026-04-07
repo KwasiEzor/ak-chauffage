@@ -1,6 +1,15 @@
 import { Phone, Clock, ArrowRight } from 'lucide-react';
+import { useContent } from '../contexts/ContentContext';
 
 export default function CTABanner() {
+  const { content, settings } = useContent();
+  const ctaBanner = content?.ctaBanner || {
+    badge: 'Service disponible 7j/7',
+    headline: 'Besoin d\'un chauffagiste en urgence ?',
+    subheadline: 'Nos techniciens interviennent rapidement.',
+    stats: [],
+  };
+
   const scrollToContact = () => {
     document.querySelector('#contact')?.scrollIntoView({ behavior: 'smooth' });
   };
@@ -27,26 +36,24 @@ export default function CTABanner() {
           <div className="text-center lg:text-left">
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/20 text-white text-sm font-medium mb-4">
               <Clock className="w-4 h-4" />
-              Service disponible 7j/7
+              {ctaBanner.badge}
             </div>
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-4">
-              Besoin d'un chauffagiste<br />
-              <span className="text-white/90">en urgence ?</span>
+              {ctaBanner.headline}
             </h2>
             <p className="text-lg text-white/80 max-w-xl">
-              Nos techniciens interviennent rapidement pour tous types de pannes.
-              Disponible 7 jours sur 7 à Charleroi et ses environs.
+              {ctaBanner.subheadline}
             </p>
           </div>
 
           {/* Right CTA */}
           <div className="flex flex-col sm:flex-row gap-4">
             <a
-              href="tel:+32488459976"
+              href={`tel:${settings?.contact.phone?.replace(/\s/g, '')}`}
               className="inline-flex items-center justify-center gap-3 px-8 py-4 rounded-xl bg-white text-orange-600 font-bold text-lg hover:bg-zinc-100 transition-colors shadow-xl"
             >
               <Phone className="w-6 h-6" />
-              +32 488 45 99 76
+              {settings?.contact.phone}
             </a>
             <button
               onClick={scrollToContact}
@@ -61,12 +68,7 @@ export default function CTABanner() {
         {/* Trust Indicators */}
         <div className="mt-12 pt-8 border-t border-white/20">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
-            {[
-              { value: 'Rapide', label: 'Intervention' },
-              { value: '7j/7', label: 'Disponibilité' },
-              { value: '0€', label: 'Devis gratuit' },
-              { value: '100%', label: 'Satisfaction' },
-            ].map((stat, index) => (
+            {ctaBanner.stats.map((stat, index) => (
               <div key={index}>
                 <div className="text-3xl font-bold text-white mb-1">{stat.value}</div>
                 <div className="text-sm text-white/70">{stat.label}</div>

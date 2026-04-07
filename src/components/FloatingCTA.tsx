@@ -1,9 +1,11 @@
 import { Phone, MessageCircle, X } from 'lucide-react';
 import { useState, useEffect } from 'react';
+import { useContent } from '../contexts/ContentContext';
 
 export default function FloatingCTA() {
   const [isVisible, setIsVisible] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
+  const { settings } = useContent();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -20,7 +22,7 @@ export default function FloatingCTA() {
         isVisible ? 'translate-y-0 opacity-100' : 'translate-y-full opacity-0'
       }`}>
         <a
-          href="tel:+32488459976"
+          href={`tel:${settings?.contact.phone?.replace(/\s/g, '')}`}
           className="flex items-center justify-center gap-2 w-full py-4 rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 text-white font-bold shadow-lg pulse-glow"
         >
           <Phone className="w-5 h-5" />
@@ -35,11 +37,11 @@ export default function FloatingCTA() {
         {isExpanded && (
           <>
             <a
-              href="tel:+32488459976"
+              href={`tel:${settings?.contact.phone?.replace(/\s/g, '')}`}
               className="flex items-center gap-3 px-4 py-3 rounded-full bg-orange-500 text-white font-medium shadow-lg hover:bg-orange-600 transition-colors"
             >
               <Phone className="w-5 h-5" />
-              <span>+32 488 45 99 76</span>
+              <span>{settings?.contact.phone}</span>
             </a>
             <a
               href="#contact"

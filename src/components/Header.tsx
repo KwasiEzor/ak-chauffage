@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
 import { Phone, Menu, X, Flame } from 'lucide-react';
+import { useContent } from '../contexts/ContentContext';
 
 export default function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const { settings } = useContent();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -13,7 +15,7 @@ export default function Header() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const navLinks = [
+  const navLinks = settings?.navigation || [
     { href: '#services', label: 'Services' },
     { href: '#avantages', label: 'Pourquoi Nous' },
     { href: '#realisations', label: 'Réalisations' },
@@ -67,11 +69,11 @@ export default function Header() {
           {/* CTA Buttons */}
           <div className="hidden lg:flex items-center gap-4">
             <a
-              href="tel:+32488459976"
+              href={`tel:${settings?.contact.phone?.replace(/\s/g, '')}`}
               className="flex items-center gap-2 text-sm font-semibold text-white hover:text-orange-400 transition-colors"
             >
               <Phone className="w-4 h-4" />
-              +32 488 45 99 76
+              {settings?.contact.phone}
             </a>
             <button
               onClick={() => scrollToSection('#contact')}
@@ -105,11 +107,11 @@ export default function Header() {
               ))}
               <div className="border-t border-white/10 mt-3 pt-3 space-y-3">
                 <a
-                  href="tel:+32488459976"
+                  href={`tel:${settings?.contact.phone?.replace(/\s/g, '')}`}
                   className="flex items-center gap-2 text-orange-400 font-semibold py-2 px-2"
                 >
                   <Phone className="w-5 h-5" />
-                  +32 488 45 99 76
+                  {settings?.contact.phone}
                 </a>
                 <button
                   onClick={() => scrollToSection('#contact')}

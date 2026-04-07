@@ -8,6 +8,8 @@ import {
   MessageSquare,
   Star,
   Briefcase,
+  Image,
+  Settings,
   LogOut,
   Menu,
   X,
@@ -24,6 +26,8 @@ const navigation = [
   { name: 'FAQs', href: '/admin/faqs', icon: MessageSquare },
   { name: 'Testimonials', href: '/admin/testimonials', icon: Star },
   { name: 'Projects', href: '/admin/projects', icon: Briefcase },
+  { name: 'Media Library', href: '/admin/media', icon: Image },
+  { name: 'Settings', href: '/admin/settings', icon: Settings },
 ];
 
 export default function AdminLayout({ children }: AdminLayoutProps) {

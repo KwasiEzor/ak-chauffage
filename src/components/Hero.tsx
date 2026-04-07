@@ -1,8 +1,20 @@
 import { useEffect, useRef } from 'react';
 import { Phone, ArrowRight, CheckCircle2, Clock, Shield, Award } from 'lucide-react';
+import { useContent } from '../contexts/ContentContext';
 
 export default function Hero() {
   const heroRef = useRef<HTMLDivElement>(null);
+  const { content, settings } = useContent();
+
+  const heroContent = content?.hero || {
+    badge: 'Disponible du lundi au dimanche',
+    headline: 'Expert Chauffagiste à Charleroi',
+    subheadline: 'Installation, entretien et dépannage',
+    trustBadges: [],
+    quickBenefits: [],
+    stats: [],
+    rating: { value: 4.9, platform: 'Google' },
+  };
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -22,11 +34,11 @@ export default function Hero() {
     return () => observer.disconnect();
   }, []);
 
-  const trustBadges = [
-    { icon: Clock, text: 'Ouvert 7j/7' },
-    { icon: Shield, text: 'Garantie 10 ans' },
-    { icon: Award, text: 'Certifié RGE' },
-  ];
+  const iconMap: Record<string, any> = { Clock, Shield, Award };
+  const trustBadges = heroContent.trustBadges.map((badge) => ({
+    ...badge,
+    icon: iconMap[badge.icon] || Clock,
+  }));
 
   const scrollToContact = () => {
     document.querySelector('#contact')?.scrollIntoView({ behavior: 'smooth' });
@@ -61,19 +73,18 @@ export default function Hero() {
             {/* Badge */}
             <div className="reveal opacity-0 inline-flex items-center gap-2 px-4 py-2 rounded-full bg-orange-500/10 border border-orange-500/20">
               <span className="w-2 h-2 rounded-full bg-orange-500 animate-pulse" />
-              <span className="text-sm font-medium text-orange-400">Disponible du lundi au dimanche</span>
+              <span className="text-sm font-medium text-orange-400">{heroContent.badge}</span>
             </div>
 
             {/* Headline */}
             <h1 className="reveal opacity-0 text-4xl sm:text-5xl lg:text-6xl font-bold text-white leading-tight" style={{ animationDelay: '100ms' }}>
-              Expert Chauffagiste à{' '}
-              <span className="text-gradient">Charleroi</span>
+              {heroContent.headline.split(' ').slice(0, -1).join(' ')}{' '}
+              <span className="text-gradient">{heroContent.headline.split(' ').slice(-1)}</span>
             </h1>
 
             {/* Subheadline */}
             <p className="reveal opacity-0 text-xl text-zinc-300 max-w-xl" style={{ animationDelay: '200ms' }}>
-              Installation, entretien et dépannage de chaudières, pompes à chaleur et systèmes de chauffage. 
-              Intervention rapide, devis gratuit et travail garanti.
+              {heroContent.subheadline}
             </p>
 
             {/* Trust Badges */}
@@ -109,7 +120,7 @@ export default function Hero() {
 
             {/* Quick Benefits */}
             <div className="reveal opacity-0 grid grid-cols-2 gap-4 pt-4" style={{ animationDelay: '500ms' }}>
-              {['Devis gratuit sous 24h', 'Intervention < 2h', 'Garantie décennale', 'Certifié QualiPac'].map((item, index) => (
+              {heroContent.quickBenefits.map((item, index) => (
                 <div key={index} className="flex items-center gap-2">
                   <CheckCircle2 className="w-5 h-5 text-orange-500 flex-shrink-0" />
                   <span className="text-sm text-zinc-400">{item}</span>
@@ -127,24 +138,14 @@ export default function Hero() {
               {/* Stats Card */}
               <div className="relative glass-strong rounded-2xl p-8 space-y-6">
                 <div className="grid grid-cols-2 gap-6">
-                  <div className="text-center p-4 rounded-xl bg-white/5">
-                    <div className="text-4xl font-bold text-gradient mb-1">15+</div>
-                    <div className="text-sm text-zinc-400">Années d'expérience</div>
-                  </div>
-                  <div className="text-center p-4 rounded-xl bg-white/5">
-                    <div className="text-4xl font-bold text-gradient mb-1">5000+</div>
-                    <div className="text-sm text-zinc-400">Clients satisfaits</div>
-                  </div>
-                  <div className="text-center p-4 rounded-xl bg-white/5">
-                    <div className="text-4xl font-bold text-gradient mb-1">24/7</div>
-                    <div className="text-sm text-zinc-400">Service d'urgence</div>
-                  </div>
-                  <div className="text-center p-4 rounded-xl bg-white/5">
-                    <div className="text-4xl font-bold text-gradient mb-1">100%</div>
-                    <div className="text-sm text-zinc-400">Garantie satisfaction</div>
-                  </div>
+                  {heroContent.stats.map((stat, index) => (
+                    <div key={index} className="text-center p-4 rounded-xl bg-white/5">
+                      <div className="text-4xl font-bold text-gradient mb-1">{stat.value}</div>
+                      <div className="text-sm text-zinc-400">{stat.label}</div>
+                    </div>
+                  ))}
                 </div>
-                
+
                 {/* Rating */}
                 <div className="flex items-center justify-center gap-4 pt-4 border-t border-white/10">
                   <div className="flex gap-1">
@@ -154,7 +155,7 @@ export default function Hero() {
                       </svg>
                     ))}
                   </div>
-                  <span className="text-zinc-300">4.9/5 sur Google</span>
+                  <span className="text-zinc-300">{heroContent.rating.value}/5 sur {heroContent.rating.platform}</span>
                 </div>
               </div>
             </div>
