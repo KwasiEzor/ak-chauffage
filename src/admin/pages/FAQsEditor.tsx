@@ -1,8 +1,8 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useContent } from '../../contexts/ContentContext';
 import { adminApi } from '../../utils/api';
 import { FAQ } from '../../types/content';
-import { Save, AlertCircle, CheckCircle2, Pencil, Plus, Trash2 } from 'lucide-react';
+import { Save, AlertCircle, CheckCircle2, Pencil, Plus, Trash2, Search, Filter, CheckSquare, Square } from 'lucide-react';
 
 export default function FAQsEditor() {
   const { content, refetch } = useContent();
@@ -10,6 +10,10 @@ export default function FAQsEditor() {
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const [editingId, setEditingId] = useState<number | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('all');
+  const [categoryFilter, setCategoryFilter] = useState<string>('all');
+  const [selectedIds, setSelectedIds] = useState<number[]>([]);
 
   const handleSave = async () => {
     setSaving(true);
@@ -58,6 +62,73 @@ export default function FAQsEditor() {
     setEditingId(newId);
   };
 
+  // Get unique categories
+  const categories = useMemo(() => {
+    return Array.from(new Set(faqs.map((faq) => faq.category)));
+  }, [faqs]);
+
+  // Filtered FAQs
+  const filteredFaqs = useMemo(() => {
+    return faqs
+      .filter((faq) => {
+        const matchesSearch =
+          searchQuery === '' ||
+          faq.question.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          faq.answer.toLowerCase().includes(searchQuery.toLowerCase());
+
+        const matchesStatus =
+          statusFilter === 'all' ||
+          (statusFilter === 'active' && faq.active) ||
+          (statusFilter === 'inactive' && !faq.active);
+
+        const matchesCategory =
+          categoryFilter === 'all' || faq.category === categoryFilter;
+
+        return matchesSearch && matchesStatus && matchesCategory;
+      })
+      .sort((a, b) => a.order - b.order);
+  }, [faqs, searchQuery, statusFilter, categoryFilter]);
+
+  // Bulk operations
+  const toggleSelectAll = () => {
+    if (selectedIds.length === filteredFaqs.length) {
+      setSelectedIds([]);
+    } else {
+      setSelectedIds(filteredFaqs.map((f) => f.id));
+    }
+  };
+
+  const toggleSelect = (id: number) => {
+    setSelectedIds((prev) =>
+      prev.includes(id) ? prev.filter((fid) => fid !== id) : [...prev, id]
+    );
+  };
+
+  const bulkActivate = () => {
+    setFaqs(
+      faqs.map((faq) =>
+        selectedIds.includes(faq.id) ? { ...faq, active: true } : faq
+      )
+    );
+    setSelectedIds([]);
+  };
+
+  const bulkDeactivate = () => {
+    setFaqs(
+      faqs.map((faq) =>
+        selectedIds.includes(faq.id) ? { ...faq, active: false } : faq
+      )
+    );
+    setSelectedIds([]);
+  };
+
+  const bulkDelete = () => {
+    if (confirm(`Are you sure you want to delete ${selectedIds.length} FAQs?`)) {
+      setFaqs(faqs.filter((faq) => !selectedIds.includes(faq.id)));
+      setSelectedIds([]);
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -103,11 +174,135 @@ export default function FAQsEditor() {
         </div>
       )}
 
+      {/* Search and Filters */}
+      <div className="bg-zinc-800 border border-zinc-700 rounded-xl p-4">
+        <div className="flex flex-col lg:flex-row gap-4">
+          {/* Search */}
+          <div className="flex-1">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-400" />
+              <input
+                type="text"
+                placeholder="Search FAQs..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-10 pr-4 py-2 bg-zinc-900 border border-zinc-700 rounded-lg text-white placeholder-zinc-500 focus:outline-none focus:border-orange-500"
+              />
+            </div>
+          </div>
+
+          {/* Filters */}
+          <div className="flex flex-wrap items-center gap-2">
+            <Filter className="w-5 h-5 text-zinc-400" />
+
+            {/* Category Filter */}
+            <select
+              value={categoryFilter}
+              onChange={(e) => setCategoryFilter(e.target.value)}
+              className="px-4 py-2 bg-zinc-900 border border-zinc-700 rounded-lg text-white text-sm focus:outline-none focus:border-orange-500"
+            >
+              <option value="all">All Categories</option>
+              {categories.map((category) => (
+                <option key={category} value={category}>
+                  {category}
+                </option>
+              ))}
+            </select>
+
+            {/* Status Filter */}
+            <div className="flex gap-2">
+              <button
+                onClick={() => setStatusFilter('all')}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  statusFilter === 'all'
+                    ? 'bg-orange-500 text-white'
+                    : 'bg-zinc-700 text-zinc-300 hover:bg-zinc-600'
+                }`}
+              >
+                All
+              </button>
+              <button
+                onClick={() => setStatusFilter('active')}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  statusFilter === 'active'
+                    ? 'bg-green-500 text-white'
+                    : 'bg-zinc-700 text-zinc-300 hover:bg-zinc-600'
+                }`}
+              >
+                Active
+              </button>
+              <button
+                onClick={() => setStatusFilter('inactive')}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  statusFilter === 'inactive'
+                    ? 'bg-zinc-500 text-white'
+                    : 'bg-zinc-700 text-zinc-300 hover:bg-zinc-600'
+                }`}
+              >
+                Inactive
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Bulk Actions */}
+        {selectedIds.length > 0 && (
+          <div className="mt-4 pt-4 border-t border-zinc-700 flex items-center justify-between">
+            <span className="text-sm text-zinc-400">
+              {selectedIds.length} FAQ{selectedIds.length > 1 ? 's' : ''} selected
+            </span>
+            <div className="flex gap-2">
+              <button
+                onClick={bulkActivate}
+                className="px-4 py-2 bg-green-500 hover:bg-green-600 text-white text-sm font-medium rounded-lg transition-colors"
+              >
+                Activate
+              </button>
+              <button
+                onClick={bulkDeactivate}
+                className="px-4 py-2 bg-zinc-600 hover:bg-zinc-500 text-white text-sm font-medium rounded-lg transition-colors"
+              >
+                Deactivate
+              </button>
+              <button
+                onClick={bulkDelete}
+                className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white text-sm font-medium rounded-lg transition-colors"
+              >
+                Delete
+              </button>
+              <button
+                onClick={() => setSelectedIds([])}
+                className="px-4 py-2 bg-zinc-700 hover:bg-zinc-600 text-zinc-300 text-sm font-medium rounded-lg transition-colors"
+              >
+                Clear
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+
       {/* FAQs List */}
       <div className="space-y-4">
-        {faqs
-          .sort((a, b) => a.order - b.order)
-          .map((faq) => {
+        {/* Select All */}
+        {filteredFaqs.length > 0 && (
+          <div className="flex items-center gap-3 px-4 py-2 bg-zinc-800/50 border border-zinc-700 rounded-lg">
+            <button
+              onClick={toggleSelectAll}
+              className="text-zinc-400 hover:text-white transition-colors"
+            >
+              {selectedIds.length === filteredFaqs.length ? (
+                <CheckSquare className="w-5 h-5 text-orange-500" />
+              ) : (
+                <Square className="w-5 h-5" />
+              )}
+            </button>
+            <span className="text-sm text-zinc-400">
+              Select all ({filteredFaqs.length} FAQ{filteredFaqs.length > 1 ? 's' : ''})
+            </span>
+          </div>
+        )}
+
+        {filteredFaqs.map((faq) => {
             const isEditing = editingId === faq.id;
 
             return (
@@ -119,13 +314,24 @@ export default function FAQsEditor() {
               >
                 <div className="p-6">
                   <div className="flex items-start justify-between mb-4">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-2">
-                        <span className="px-2 py-1 rounded bg-orange-500/20 text-orange-400 text-xs font-medium">
-                          {faq.category}
-                        </span>
-                        <span className="text-zinc-500 text-sm">FAQ #{faq.id}</span>
-                      </div>
+                    <div className="flex items-start gap-3 flex-1">
+                      <button
+                        onClick={() => toggleSelect(faq.id)}
+                        className="text-zinc-400 hover:text-white transition-colors mt-1"
+                      >
+                        {selectedIds.includes(faq.id) ? (
+                          <CheckSquare className="w-5 h-5 text-orange-500" />
+                        ) : (
+                          <Square className="w-5 h-5" />
+                        )}
+                      </button>
+                      <div className="flex-1">
+                        <div className="flex items-center gap-3 mb-2">
+                          <span className="px-2 py-1 rounded bg-orange-500/20 text-orange-400 text-xs font-medium">
+                            {faq.category}
+                          </span>
+                          <span className="text-zinc-500 text-sm">FAQ #{faq.id}</span>
+                        </div>
                       {isEditing ? (
                         <div className="space-y-3">
                           <div>
@@ -168,8 +374,9 @@ export default function FAQsEditor() {
                           <p className="text-zinc-400 text-sm">{faq.answer}</p>
                         </>
                       )}
+                      </div>
                     </div>
-                    <div className="flex items-center gap-2 ml-4">
+                    <div className="flex items-center gap-2 ml-4 shrink-0">
                       <button
                         onClick={() => setEditingId(isEditing ? null : faq.id)}
                         className="px-3 py-1.5 rounded-lg bg-zinc-700 hover:bg-zinc-600 text-white text-sm transition-colors"
@@ -198,6 +405,14 @@ export default function FAQsEditor() {
               </div>
             );
           })}
+
+        {/* No Results */}
+        {filteredFaqs.length === 0 && (
+          <div className="text-center py-12 bg-zinc-800 border border-zinc-700 rounded-xl">
+            <p className="text-zinc-400 text-lg">No FAQs found</p>
+            <p className="text-zinc-500 text-sm mt-2">Try adjusting your search or filters</p>
+          </div>
+        )}
       </div>
     </div>
   );

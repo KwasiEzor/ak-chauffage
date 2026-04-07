@@ -26,6 +26,7 @@ const navigation = [
   { name: 'FAQs', href: '/admin/faqs', icon: MessageSquare },
   { name: 'Testimonials', href: '/admin/testimonials', icon: Star },
   { name: 'Projects', href: '/admin/projects', icon: Briefcase },
+  { name: 'Hero Section', href: '/admin/hero', icon: Flame },
   { name: 'Media Library', href: '/admin/media', icon: Image },
   { name: 'Settings', href: '/admin/settings', icon: Settings },
 ];
