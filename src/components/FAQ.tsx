@@ -1,53 +1,17 @@
 import { useState, useEffect, useRef } from 'react';
 import { ChevronDown, HelpCircle } from 'lucide-react';
-
-const faqs = [
-  {
-    question: 'Quels sont les délais d\'intervention pour un dépannage urgent ?',
-    answer: 'Pour les dépannages urgents, nous intervenons rapidement à Charleroi et ses environs. Notre service est disponible 7 jours sur 7, y compris les week-ends. En cas de panne de chauffage en plein hiver, nous priorisons les interventions pour votre confort et sécurité.',
-    category: 'Dépannage',
-  },
-  {
-    question: 'Quel est le prix d\'une installation de chaudière à gaz ?',
-    answer: 'Le prix d\'une installation de chaudière à gaz varie selon plusieurs facteurs : type de chaudière (classique ou à condensation), puissance nécessaire, travaux annexes éventuels, etc. En moyenne, comptez entre 3 000€ et 8 000€ tout compris. Nous proposons des devis gratuits et personnalisés, et nous vous accompagnons pour obtenir les aides énergie (MaPrimeRénov, CEE, etc.).',
-    category: 'Installation',
-  },
-  {
-    question: 'L\'entretien annuel de chaudière est-il obligatoire ?',
-    answer: 'Oui, l\'entretien annuel des chaudières à gaz ou fioul est obligatoire depuis la réglementation en vigueur. Cet entretien doit être réalisé par un professionnel qualifié et permet d\'assurer votre sécurité, d\'optimiser les performances de votre installation et de réduire votre consommation énergétique. Un justificatif d\'entretien peut vous être demandé en cas de sinistre.',
-    category: 'Entretien',
-  },
-  {
-    question: 'Comment savoir si je suis éligible aux aides énergie ?',
-    answer: 'L\'éligibilité aux aides énergie dépend de plusieurs critères : localisation du logement, revenus du foyer, type de travaux envisagés, etc. En tant que professionnel certifié RGE QualiPac, nous réalisons un audit gratuit de votre situation et nous occupons de monter votre dossier d\'aides (MaPrimeRénov, CEE, Éco-PTZ). Nous vous accompagnons de A à Z dans vos démarches.',
-    category: 'Aides',
-  },
-  {
-    question: 'Quelle différence entre une chaudière classique et à condensation ?',
-    answer: 'Une chaudière à condensation récupère la chaleur contenue dans les gaz de combustion pour la réinjecter dans le circuit de chauffage. Cette technologie permet d\'économiser jusqu\'à 30% d\'énergie par rapport à une chaudière classique. Elle est également plus écologique et vous permet de bénéficier des aides à la rénovation énergétique.',
-    category: 'Conseils',
-  },
-  {
-    question: 'Proposez-vous des contrats d\'entretien ?',
-    answer: 'Oui, nous proposons plusieurs formules de contrats d\'entretien adaptés à vos besoins. Ces contrats incluent l\'entretien annuel obligatoire, la vérification de sécurité, le dépannage prioritaire et des tarifs préférentiels sur les pièces et la main d\'œuvre. Contactez-nous pour découvrir nos offres et choisir celle qui vous convient le mieux.',
-    category: 'Entretien',
-  },
-  {
-    question: 'Quelles marques de chaudières installez-vous ?',
-    answer: 'Nous installons les meilleures marques du marché : Vaillant, Viessmann, Frisquet, Chaffoteaux, Saunier Duval, De Dietrich, et bien d\'autres. Nous sélectionnons les modèles les plus performants et fiables, adaptés à votre logement et à votre budget. Nous vous conseillons personnellement pour faire le meilleur choix.',
-    category: 'Installation',
-  },
-  {
-    question: 'Quelle est la durée de vie d\'une chaudière ?',
-    answer: 'La durée de vie moyenne d\'une chaudière est d\'environ 15 à 20 ans, selon la qualité de l\'installation, l\'entretien régulier et l\'utilisation. Un entretien annuel professionnel permet d\'optimiser la performance de votre appareil et de prolonger sa durée de vie. Au-delà de 15 ans, il peut être intéressant d\'envisager le remplacement pour bénéficier des dernières technologies et réaliser des économies d\'énergie.',
-    category: 'Conseils',
-  },
-];
+import { useContent } from '../contexts/ContentContext';
 
 export default function FAQ() {
   const sectionRef = useRef<HTMLElement>(null);
   const [isVisible, setIsVisible] = useState(false);
   const [openIndex, setOpenIndex] = useState<number | null>(0);
+  const { content } = useContent();
+
+  // Get active FAQs from content
+  const faqs = (content?.faqs || [])
+    .filter((faq) => faq.active)
+    .sort((a, b) => a.order - b.order);
 
   useEffect(() => {
     const observer = new IntersectionObserver(

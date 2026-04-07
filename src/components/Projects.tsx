@@ -1,37 +1,18 @@
 import { useEffect, useRef, useState } from 'react';
 import { ArrowRight, MapPin, Calendar, Expand } from 'lucide-react';
-
-const projects = [
-  {
-    title: 'Installation Chaudière Gaz Condensation',
-    location: 'Charleroi',
-    date: 'Décembre 2024',
-    description: 'Remplacement complet d\'une vieille chaudière par un modèle à haute efficacité énergétique. Réduction de 30% sur la facture énergétique.',
-    image: '/images/project-1.jpg',
-    category: 'Installation',
-  },
-  {
-    title: 'Pompe à Chaleur Air/Eau',
-    location: 'Gosselies',
-    date: 'Novembre 2024',
-    description: 'Installation d\'une pompe à chaleur moderne pour une maison individuelle. Projet accompagné avec MaPrimeRénov.',
-    image: '/images/project-2.jpg',
-    category: 'Pompe à Chaleur',
-  },
-  {
-    title: 'Système de Chauffage Collectif',
-    location: 'Marcinelle',
-    date: 'Octobre 2024',
-    description: 'Modernisation complète du système de chauffage d\'une copropriété de 50 logements. Optimisation et régulation intelligente.',
-    image: '/images/project-3.jpg',
-    category: 'Commercial',
-  },
-];
+import { useContent } from '../contexts/ContentContext';
+import type { Project } from '../types/content';
 
 export default function Projects() {
   const sectionRef = useRef<HTMLElement>(null);
   const [isVisible, setIsVisible] = useState(false);
-  const [selectedProject, setSelectedProject] = useState<typeof projects[0] | null>(null);
+  const [selectedProject, setSelectedProject] = useState<Project | null>(null);
+  const { content } = useContent();
+
+  // Get active projects from content
+  const projects = (content?.projects || [])
+    .filter((project) => project.active)
+    .sort((a, b) => a.order - b.order);
 
   useEffect(() => {
     const observer = new IntersectionObserver(

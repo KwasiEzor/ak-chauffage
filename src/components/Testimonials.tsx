@@ -1,53 +1,17 @@
 import { useEffect, useRef, useState } from 'react';
 import { Star, Quote, ChevronLeft, ChevronRight } from 'lucide-react';
-
-const testimonials = [
-  {
-    name: 'Marie L.',
-    location: 'Charleroi',
-    rating: 5,
-    text: 'Intervention ultra rapide après la panne de ma chaudière en plein hiver. Le technicien était professionnel, sympathique et a tout expliqué clairement. Ma nouvelle chaudière fonctionne parfaitement. Je recommande vivement !',
-    service: 'Remplacement chaudière gaz',
-    avatar: 'ML',
-  },
-  {
-    name: 'Pierre D.',
-    location: 'Gilly',
-    rating: 5,
-    text: 'Excellente expérience pour l\'installation de notre pompe à chaleur. L\'équipe a été très professionnelle du devis à l\'installation. Ils ont même géré tout le dossier MaPrimeRénov. Résultat au top !',
-    service: 'Installation PAC air/eau',
-    avatar: 'PD',
-  },
-  {
-    name: 'Sophie M.',
-    location: 'Marcinelle',
-    rating: 5,
-    text: 'Contrat d\'entretien annuel depuis 3 ans. Jamais déçue ! Ponctualité, professionnalisme et tarifs transparents. Mon ancienne chaudière tient toujours le coup grâce à leur entretien rigoureux.',
-    service: 'Contrat maintenance',
-    avatar: 'SM',
-  },
-  {
-    name: 'Jean-Claude B.',
-    location: 'Gosselies',
-    rating: 5,
-    text: 'Dépannage rapide un dimanche après-midi. Intervention efficace, problème résolu immédiatement. Service client au top, prix juste. Un grand merci !',
-    service: 'Dépannage urgent',
-    avatar: 'JB',
-  },
-  {
-    name: 'Isabelle T.',
-    location: 'Montignies-sur-Sambre',
-    rating: 5,
-    text: 'Rénovation complète du chauffage de notre maison. Conseils pertinents, devis détaillé, travail soigné et respect des délais. Équipe très agréable et à l\'écoute. Merci AK CHAUFFAGE !',
-    service: 'Rénovation complète',
-    avatar: 'IT',
-  },
-];
+import { useContent } from '../contexts/ContentContext';
 
 export default function Testimonials() {
   const sectionRef = useRef<HTMLElement>(null);
   const [isVisible, setIsVisible] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
+  const { content, settings } = useContent();
+
+  // Get active testimonials from content
+  const testimonials = (content?.testimonials || [])
+    .filter((testimonial) => testimonial.active)
+    .sort((a, b) => a.order - b.order);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -191,7 +155,7 @@ export default function Testimonials() {
                   <Star key={i} className="w-4 h-4 text-orange-500 fill-orange-500" />
                 ))}
               </div>
-              <div className="text-white font-semibold">4.9/5</div>
+              <div className="text-white font-semibold">{settings?.ratings.google.value}/5</div>
               <div className="text-xs text-zinc-500">Google Avis</div>
             </div>
             <div className="w-px h-12 bg-zinc-700" />
@@ -201,7 +165,7 @@ export default function Testimonials() {
                   <Star key={i} className="w-4 h-4 text-orange-500 fill-orange-500" />
                 ))}
               </div>
-              <div className="text-white font-semibold">5/5</div>
+              <div className="text-white font-semibold">{settings?.ratings.pagesJaunes.value}/5</div>
               <div className="text-xs text-zinc-500">Pages Jaunes</div>
             </div>
             <div className="w-px h-12 bg-zinc-700" />
@@ -211,7 +175,7 @@ export default function Testimonials() {
                   <Star key={i} className="w-4 h-4 text-orange-500 fill-orange-500" />
                 ))}
               </div>
-              <div className="text-white font-semibold">4.8/5</div>
+              <div className="text-white font-semibold">{settings?.ratings.trustpilot.value}/5</div>
               <div className="text-xs text-zinc-500">Trustpilot</div>
             </div>
           </div>

@@ -1,49 +1,30 @@
 import { useEffect, useRef, useState } from 'react';
 import { Shield, Clock, Award, Users, CheckCircle2, BadgeCheck, Phone } from 'lucide-react';
+import { useContent } from '../contexts/ContentContext';
 
-const advantages = [
-  {
-    icon: Clock,
-    title: 'Intervention Rapide',
-    description: 'Nous intervenons rapidement pour toutes vos urgences. Service disponible du lundi au dimanche.',
-    stat: '< 2h',
-    statLabel: 'Temps d\'intervention',
-  },
-  {
-    icon: Shield,
-    title: 'Garantie Décennale',
-    description: 'Toutes nos installations sont couvertes par une garantie décennale. Travail soigné et durable garanti.',
-    stat: '10 ans',
-    statLabel: 'Garantie installation',
-  },
-  {
-    icon: Award,
-    title: 'Certifications Officielles',
-    description: 'Certifié RGE QualiPac, nous vous accompagnons pour obtenir toutes les aides énergie disponibles.',
-    stat: '100%',
-    statLabel: 'Aides énergie obtenues',
-  },
-  {
-    icon: Users,
-    title: 'Équipe d\'Experts',
-    description: 'Nos techniciens sont formés aux dernières technologies et disposent de plus de 15 ans d\'expérience.',
-    stat: '15+',
-    statLabel: 'Années d\'expérience',
-  },
-];
-
-const certifications = [
-  'RGE QualiPac',
-  'Certification Gaz',
-  'Label Qualibat',
-  'ProfiPac',
-  'Certibat',
-  'MaPrimeRénov',
-];
+// Icon mapping
+const iconMap: Record<string, any> = {
+  Clock,
+  Shield,
+  Award,
+  Users,
+};
 
 export default function WhyChooseUs() {
   const sectionRef = useRef<HTMLElement>(null);
   const [isVisible, setIsVisible] = useState(false);
+  const { content } = useContent();
+
+  // Get active advantages and certifications from content
+  const advantages = (content?.advantages || [])
+    .filter((adv) => adv.active)
+    .sort((a, b) => a.order - b.order)
+    .map((adv) => ({
+      ...adv,
+      icon: iconMap[adv.icon] || Clock,
+    }));
+
+  const certifications = content?.certifications || [];
 
   useEffect(() => {
     const observer = new IntersectionObserver(

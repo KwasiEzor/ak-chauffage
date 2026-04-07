@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { Phone, Mail, MapPin, Clock, Send, CheckCircle2, Loader2 } from 'lucide-react';
+import { useContent } from '../contexts/ContentContext';
 
 export default function Contact() {
   const sectionRef = useRef<HTMLElement>(null);
@@ -13,6 +14,7 @@ export default function Contact() {
     service: '',
     message: '',
   });
+  const { content, settings } = useContent();
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -50,42 +52,34 @@ export default function Contact() {
     {
       icon: Phone,
       title: 'Téléphone',
-      content: '+32 488 45 99 76',
-      description: 'Du lundi au samedi',
-      link: 'tel:+32488459976',
+      content: settings?.contact.phone || '',
+      description: settings?.hours.weekdays.label + ' : ' + settings?.hours.weekdays.hours || '',
+      link: `tel:${settings?.contact.phone?.replace(/\s/g, '')}`,
     },
     {
       icon: Mail,
       title: 'Email',
-      content: 'contact@ak-chauffage.be',
+      content: settings?.contact.email || '',
       description: 'Réponse sous 24h ouvrées',
-      link: 'mailto:contact@ak-chauffage.be',
+      link: `mailto:${settings?.contact.email}`,
     },
     {
       icon: MapPin,
       title: 'Adresse',
-      content: 'Bd Jacques Bertrand 33',
-      description: '6000 Charleroi, Belgique',
+      content: settings?.contact.address.street || '',
+      description: `${settings?.contact.address.postalCode} ${settings?.contact.address.city}`,
       link: '#',
     },
     {
       icon: Clock,
       title: 'Horaires',
-      content: 'Lun - Sam : 07:30-21:00',
-      description: 'Dimanche : 09:00-20:00',
+      content: settings?.hours.weekdays.label + ' : ' + settings?.hours.weekdays.hours || '',
+      description: settings?.hours.sunday.label + ' : ' + settings?.hours.sunday.hours || '',
       link: null,
     },
   ];
 
-  const services = [
-    'Installation chaudière',
-    'Pompe à chaleur',
-    'Entretien / Maintenance',
-    'Dépannage urgent',
-    'Radiateurs',
-    'Rénovation énergétique',
-    'Autre demande',
-  ];
+  const services = settings?.services.map(s => s.label) || [];
 
   return (
     <section

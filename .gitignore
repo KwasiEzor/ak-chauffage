@@ -22,3 +22,10 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Server and data
+server/.env
+data/*.json
+!data/.gitkeep
+uploads/*
+!uploads/.gitkeep

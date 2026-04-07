@@ -1,54 +1,30 @@
 import { useEffect, useRef, useState } from 'react';
 import { Flame, Wrench, Clock, Thermometer, Droplets, Home, ArrowRight } from 'lucide-react';
+import { useContent } from '../contexts/ContentContext';
 
-const services = [
-  {
-    icon: Flame,
-    title: 'Installation de Chaudière',
-    description: 'Installation professionnelle de chaudières gaz, fioul et électriques. Choix des meilleures marques avec accompagnement pour les aides énergie.',
-    features: ['Chaudière gaz à condensation', 'Chaudière fioul haute performance', 'Installation clé en main', 'Aides énergie incluses'],
-    image: '/images/boiler-installation.jpg',
-  },
-  {
-    icon: Droplets,
-    title: 'Pompe à Chaleur',
-    description: 'Solutions écologiques et économiques pour votre chauffage. Installation de pompes à chaleur air/eau et géothermiques.',
-    features: ['PAC air/eau', 'PAC géothermique', 'Éligible MaPrimeRénov', 'Économies d\'énergie'],
-    image: '/images/heat-pump.jpg',
-  },
-  {
-    icon: Wrench,
-    title: 'Entretien & Maintenance',
-    description: 'Contrats d\'entretien annuels pour garantir la performance et la longévité de votre installation. Obligation légale pour votre sécurité.',
-    features: ['Entretien annuel obligatoire', 'Contrat de maintenance', 'Réduction des pannes', 'Optimisation performance'],
-    image: '/images/maintenance.jpg',
-  },
-  {
-    icon: Clock,
-    title: 'Dépannage Urgent 24/7',
-    description: 'Service d\'urgence disponible 24h/24 et 7j/7. Intervention rapide en moins de 2 heures pour tous types de pannes.',
-    features: ['Intervention < 2h', 'Disponible 24h/24', 'Diagnostic express', 'Réparation sur place'],
-    image: '/images/repair-service.jpg',
-  },
-  {
-    icon: Thermometer,
-    title: 'Radiateurs & Plancher',
-    description: 'Installation et remplacement de radiateurs modernes et systèmes de chauffage au sol pour un confort optimal.',
-    features: ['Radiateurs design', 'Chauffage au sol', 'Thermostats connectés', 'Régulation optimale'],
-    image: '/images/radiator-system.jpg',
-  },
-  {
-    icon: Home,
-    title: 'Rénovation Énergétique',
-    description: 'Accompagnement complet pour votre rénovation énergétique. Étude thermique, solutions adaptées et montage des dossiers d\'aides.',
-    features: ['Audit énergétique', 'Solutions sur-mesure', 'MaPrimeRénov', 'Éco-PTZ'],
-    image: '/images/happy-family.jpg',
-  },
-];
+// Icon mapping
+const iconMap: Record<string, any> = {
+  Flame,
+  Wrench,
+  Clock,
+  Thermometer,
+  Droplets,
+  Home,
+};
 
 export default function Services() {
   const sectionRef = useRef<HTMLElement>(null);
   const [visibleCards, setVisibleCards] = useState<number[]>([]);
+  const { content } = useContent();
+
+  // Get active services from content, fallback to empty array
+  const services = (content?.services || [])
+    .filter((service) => service.active)
+    .sort((a, b) => a.order - b.order)
+    .map((service) => ({
+      ...service,
+      icon: iconMap[service.icon] || Wrench,
+    }));
 
   useEffect(() => {
     const observer = new IntersectionObserver(
