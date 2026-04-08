@@ -50,7 +50,7 @@ export default function StructuredData() {
         "closes": "13:00"
       }
     ],
-    "sameAs": settings?.social?.map(s => s.url).filter(Boolean) || [],
+    "sameAs": settings?.social ? Object.values(settings.social).filter(url => url && url !== '#') : [],
     "aggregateRating": {
       "@type": "AggregateRating",
       "ratingValue": "4.9",
