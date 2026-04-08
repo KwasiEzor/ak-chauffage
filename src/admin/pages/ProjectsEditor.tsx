@@ -3,6 +3,7 @@ import { useContent } from '../../contexts/ContentContext';
 import { adminApi } from '../../utils/api';
 import { Project } from '../../types/content';
 import { Save, AlertCircle, CheckCircle2, Pencil, Plus, Trash2 } from 'lucide-react';
+import ImageUpload from '../components/ImageUpload';
 
 export default function ProjectsEditor() {
   const { content, refetch } = useContent();
@@ -204,17 +205,11 @@ export default function ProjectsEditor() {
                           className="w-full bg-zinc-900 border border-zinc-700 rounded-lg px-4 py-2 text-white resize-none"
                         />
                       </div>
-                      <div>
-                        <label className="block text-sm font-medium text-zinc-400 mb-2">
-                          Image Path
-                        </label>
-                        <input
-                          type="text"
-                          value={project.image}
-                          onChange={(e) => updateProject(project.id, 'image', e.target.value)}
-                          className="w-full bg-zinc-900 border border-zinc-700 rounded-lg px-4 py-2 text-white text-sm"
-                        />
-                      </div>
+                      <ImageUpload
+                        currentValue={project.image}
+                        onUploadComplete={(url) => updateProject(project.id, 'image', url)}
+                        label="Image Path"
+                      />
                     </div>
                   ) : (
                     <>
