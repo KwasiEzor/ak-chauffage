@@ -16,6 +16,7 @@ import {
   FileText,
   Mail,
   User,
+  Server,
 } from 'lucide-react';
 import { useState } from 'react';
 
@@ -34,6 +35,7 @@ const navigation = [
   { name: 'Media Library', href: '/admin/media', icon: Image },
   { name: 'Legal Pages', href: '/admin/legal', icon: FileText },
   { name: 'Settings', href: '/admin/settings', icon: Settings },
+  { name: 'System Settings', href: '/admin/system-settings', icon: Server },
 ];
 
 export default function AdminLayout({ children }: AdminLayoutProps) {

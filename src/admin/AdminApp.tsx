@@ -8,6 +8,7 @@ import TestimonialsEditor from './pages/TestimonialsEditor';
 import ProjectsEditor from './pages/ProjectsEditor';
 import MediaLibrary from './pages/MediaLibrary';
 import SettingsEditor from './pages/SettingsEditor';
+import SystemSettings from './pages/SystemSettings';
 import HeroEditor from './pages/HeroEditor';
 import LegalEditor from './pages/LegalEditor';
 import Contacts from './pages/Contacts';
@@ -52,6 +53,7 @@ export default function AdminApp() {
                 <Route path="media" element={<MediaLibrary />} />
                 <Route path="legal" element={<LegalEditor />} />
                 <Route path="settings" element={<SettingsEditor />} />
+                <Route path="system-settings" element={<SystemSettings />} />
                 <Route path="profile" element={<Profile />} />
                 <Route path="*" element={<Navigate to="/admin" replace />} />
               </Routes>

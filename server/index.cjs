@@ -94,6 +94,7 @@ app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 app.use('/api/auth', loginLimiter, require('./routes/auth.cjs'));
 app.use('/api/content', require('./routes/content.cjs'));
 app.use('/api/settings', require('./routes/settings.cjs'));
+app.use('/api/system-settings', require('./routes/systemSettings.cjs'));
 app.use('/api/media', require('./routes/media.cjs'));
 app.use('/api/legal', require('./routes/legal.cjs'));
 app.use('/api/contact', contactLimiter, require('./routes/contact.cjs'));

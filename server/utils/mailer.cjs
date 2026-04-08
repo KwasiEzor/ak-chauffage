@@ -1,29 +1,35 @@
 const nodemailer = require('nodemailer');
+const SystemSettingsService = require('../database/systemSettingsService.cjs');
 
 /**
  * Email transporter configuration
- * Uses SMTP credentials from environment variables
+ * Uses SMTP credentials from database (if set) or falls back to environment variables
  */
 const createTransporter = () => {
+  // Get SMTP config (database or .env fallback)
+  const smtpConfig = SystemSettingsService.getSMTPConfig();
+
   // Check if email is configured
-  if (!process.env.SMTP_HOST || !process.env.SMTP_USER || !process.env.SMTP_PASS) {
+  if (!smtpConfig.host || !smtpConfig.user) {
     console.warn('⚠️  Email not configured. Contact form submissions will be logged but not sent.');
     return null;
   }
 
   const config = {
-    host: process.env.SMTP_HOST,
-    port: parseInt(process.env.SMTP_PORT) || 465,
-    secure: parseInt(process.env.SMTP_PORT) === 465, // true for 465, false for other ports
+    host: smtpConfig.host,
+    port: smtpConfig.port,
+    secure: smtpConfig.port === 465, // true for 465, false for other ports
   };
 
   // Only add auth if password is provided (Mailpit doesn't need auth)
-  if (process.env.SMTP_PASS && process.env.SMTP_PASS !== 'test') {
+  if (smtpConfig.pass && smtpConfig.pass !== 'test') {
     config.auth = {
-      user: process.env.SMTP_USER,
-      pass: process.env.SMTP_PASS,
+      user: smtpConfig.user,
+      pass: smtpConfig.pass,
     };
   }
+
+  console.log(`📧 Using SMTP config from: ${smtpConfig.source}`);
 
   return nodemailer.createTransport(config);
 };
@@ -50,11 +56,12 @@ async function sendContactEmail(formData) {
     return true; // Return true so form doesn't fail
   }
 
-  const contactEmail = process.env.CONTACT_EMAIL || process.env.SMTP_USER;
+  const smtpConfig = SystemSettingsService.getSMTPConfig();
+  const contactEmail = process.env.CONTACT_EMAIL || smtpConfig.from || smtpConfig.user;
 
   // Email to business owner
   const mailOptions = {
-    from: `"AK CHAUFFAGE Website" <${process.env.SMTP_USER}>`,
+    from: `"AK CHAUFFAGE Website" <${smtpConfig.from || smtpConfig.user}>`,
     to: contactEmail,
     replyTo: email,
     subject: `🔥 Nouveau contact: ${service}`,
@@ -157,8 +164,10 @@ async function sendAutoResponse(formData) {
   const transporter = createTransporter();
   if (!transporter) return true;
 
+  const smtpConfig = SystemSettingsService.getSMTPConfig();
+
   const mailOptions = {
-    from: `"AK CHAUFFAGE" <${process.env.SMTP_USER}>`,
+    from: `"AK CHAUFFAGE" <${smtpConfig.from || smtpConfig.user}>`,
     to: email,
     subject: 'Nous avons bien reçu votre message - AK CHAUFFAGE',
     html: `
