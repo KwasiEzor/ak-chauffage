@@ -14,6 +14,7 @@ import {
   Menu,
   X,
   FileText,
+  Mail,
 } from 'lucide-react';
 import { useState } from 'react';
 
@@ -23,6 +24,7 @@ interface AdminLayoutProps {
 
 const navigation = [
   { name: 'Dashboard', href: '/admin', icon: LayoutDashboard },
+  { name: 'Contacts', href: '/admin/contacts', icon: Mail },
   { name: 'Services', href: '/admin/services', icon: Wrench },
   { name: 'FAQs', href: '/admin/faqs', icon: MessageSquare },
   { name: 'Testimonials', href: '/admin/testimonials', icon: Star },

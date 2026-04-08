@@ -1,5 +1,6 @@
 const express = require('express');
 const { sendContactEmail, sendAutoResponse } = require('../utils/mailer.cjs');
+const ContactService = require('../database/contactService.cjs');
 const router = express.Router();
 
 /**
@@ -35,6 +36,24 @@ router.post('/', async (req, res) => {
       return res.json({ success: true, message: 'Message envoyé' });
     }
 
+    // Save to database first
+    let contact;
+    try {
+      contact = ContactService.create({
+        name,
+        email,
+        phone,
+        service,
+        message,
+        ipAddress: req.ip,
+        userAgent: req.headers['user-agent'],
+      });
+      console.log('✅ Contact saved to database:', contact.id);
+    } catch (dbError) {
+      console.error('❌ Failed to save contact to database:', dbError);
+      // Continue anyway - email is still sent
+    }
+
     // Send email to business owner
     try {
       await sendContactEmail({ name, email, phone, service, message });
@@ -49,6 +68,7 @@ router.post('/', async (req, res) => {
 
     // Log submission for debugging
     console.log('✅ Contact form submission processed:', {
+      id: contact?.id,
       name,
       email,
       phone,

@@ -89,6 +89,7 @@ app.use('/api/settings', require('./routes/settings.cjs'));
 app.use('/api/media', require('./routes/media.cjs'));
 app.use('/api/legal', require('./routes/legal.cjs'));
 app.use('/api/contact', contactLimiter, require('./routes/contact.cjs'));
+app.use('/api/contacts', require('./routes/contacts.cjs'));
 
 // Health check
 app.get('/api/health', (req, res) => {
