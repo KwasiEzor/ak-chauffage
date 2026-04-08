@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Phone, Mail, MapPin, Clock, Send, CheckCircle2, Loader2 } from 'lucide-react';
 import { useContent } from '../contexts/ContentContext';
+import ServiceAreaMap from './ServiceAreaMap';
 
 export default function Contact() {
   const sectionRef = useRef<HTMLElement>(null);
@@ -253,20 +254,25 @@ export default function Contact() {
                 </div>
               </a>
             ))}
-
-            {/* Map Placeholder */}
-            <div className="rounded-xl overflow-hidden border border-white/10 h-64 bg-zinc-800 relative">
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className="text-center">
-                  <MapPin className="w-12 h-12 text-orange-500 mx-auto mb-2" />
-                  <p className="text-zinc-400">Charleroi</p>
-                  <p className="text-sm text-zinc-500">Zone d'intervention</p>
-                </div>
-              </div>
-              {/* Decorative grid */}
-              <div className="absolute inset-0 bg-grid opacity-20" />
-            </div>
           </div>
+        </div>
+
+        {/* Service Area Map - Full Width */}
+        <div
+          className={`mt-12 transition-all duration-1000 ${
+            isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-12'
+          }`}
+          style={{ transitionDelay: '400ms' }}
+        >
+          <div className="text-center mb-6">
+            <h3 className="text-2xl font-bold text-white mb-2">
+              Notre Zone d'Intervention
+            </h3>
+            <p className="text-zinc-400">
+              Charleroi et ses environs dans un rayon de 25 km
+            </p>
+          </div>
+          <ServiceAreaMap className="h-[500px]" />
         </div>
       </div>
     </section>

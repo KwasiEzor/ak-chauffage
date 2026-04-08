@@ -280,16 +280,72 @@ h1, h2, h3, h4, h5, h6 {
   pointer-events: none;
 }
 
+/* Leaflet Map Integration - Dark Theme */
+.leaflet-container {
+  font-family: 'Inter', sans-serif;
+}
+
+/* Dark theme for map tiles */
+.map-tiles {
+  filter: brightness(0.6) invert(1) contrast(3) hue-rotate(200deg) saturate(0.3) brightness(0.7);
+}
+
+/* Custom popup styling */
+.leaflet-popup-content-wrapper {
+  background: rgba(24, 24, 27, 0.95);
+  color: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(10px);
+}
+
+.leaflet-popup-tip {
+  background: rgba(24, 24, 27, 0.95);
+}
+
+.leaflet-popup-close-button {
+  color: #a1a1aa !important;
+}
+
+.leaflet-popup-close-button:hover {
+  color: #f97316 !important;
+}
+
+/* Attribution styling */
+.leaflet-control-attribution {
+  background: rgba(24, 24, 27, 0.8) !important;
+  color: #71717a !important;
+  font-size: 10px !important;
+  backdrop-filter: blur(10px);
+}
+
+.leaflet-control-attribution a {
+  color: #f97316 !important;
+}
+
+/* Zoom control styling */
+.leaflet-control-zoom a {
+  background: rgba(24, 24, 27, 0.9) !important;
+  color: #f97316 !important;
+  border: 1px solid rgba(249, 115, 22, 0.2) !important;
+  backdrop-filter: blur(10px);
+}
+
+.leaflet-control-zoom a:hover {
+  background: rgba(249, 115, 22, 0.2) !important;
+  color: #fff !important;
+}
+
 /* Responsive Typography */
 @media (max-width: 768px) {
   :root {
     --section-padding: 4rem;
   }
-  
+
   h1 {
     font-size: 2rem !important;
   }
-  
+
   h2 {
     font-size: 1.75rem !important;
   }

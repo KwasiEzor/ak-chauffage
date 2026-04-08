@@ -50,17 +50,17 @@ export default function CTABanner() {
           <div className="flex flex-col sm:flex-row gap-4">
             <a
               href={`tel:${settings?.contact.phone?.replace(/\s/g, '')}`}
-              className="inline-flex items-center justify-center gap-3 px-8 py-4 rounded-xl bg-white text-orange-600 font-bold text-lg hover:bg-zinc-100 transition-colors shadow-xl"
+              className="inline-flex items-center justify-center gap-3 px-8 py-4 rounded-xl bg-white text-orange-600 font-bold text-lg hover:bg-zinc-100 transition-colors shadow-xl whitespace-nowrap"
             >
-              <Phone className="w-6 h-6" />
-              {settings?.contact.phone}
+              <Phone className="w-6 h-6 flex-shrink-0" />
+              <span className="whitespace-nowrap">{settings?.contact.phone}</span>
             </a>
             <button
               onClick={scrollToContact}
-              className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl bg-orange-700 text-white font-semibold text-lg hover:bg-orange-800 transition-colors border-2 border-white/20"
+              className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl bg-orange-700 text-white font-semibold text-lg hover:bg-orange-800 transition-colors border-2 border-white/20 whitespace-nowrap"
             >
               Devis Gratuit
-              <ArrowRight className="w-5 h-5" />
+              <ArrowRight className="w-5 h-5 flex-shrink-0" />
             </button>
           </div>
         </div>
