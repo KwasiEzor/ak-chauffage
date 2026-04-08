@@ -15,6 +15,7 @@ import {
   X,
   FileText,
   Mail,
+  User,
 } from 'lucide-react';
 import { useState } from 'react';
 
@@ -103,13 +104,23 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                 <div className="text-xs text-zinc-500">{user?.role}</div>
               </div>
             </div>
-            <button
-              onClick={handleLogout}
-              className="w-full flex items-center gap-2 px-4 py-2 rounded-lg text-zinc-400 hover:bg-zinc-700 hover:text-white transition-colors"
-            >
-              <LogOut className="w-5 h-5" />
-              <span>Logout</span>
-            </button>
+            <div className="space-y-1">
+              <Link
+                to="/admin/profile"
+                className="w-full flex items-center gap-2 px-4 py-2 rounded-lg text-zinc-400 hover:bg-zinc-700 hover:text-white transition-colors"
+                onClick={() => setSidebarOpen(false)}
+              >
+                <User className="w-5 h-5" />
+                <span>Profile</span>
+              </Link>
+              <button
+                onClick={handleLogout}
+                className="w-full flex items-center gap-2 px-4 py-2 rounded-lg text-zinc-400 hover:bg-zinc-700 hover:text-white transition-colors"
+              >
+                <LogOut className="w-5 h-5" />
+                <span>Logout</span>
+              </button>
+            </div>
           </div>
         </div>
       </aside>

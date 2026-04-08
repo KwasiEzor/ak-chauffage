@@ -118,6 +118,11 @@ async function start() {
     // Ensure data directory exists
     await ensureDataDir();
 
+    // Run database migrations
+    console.log('📦 Running database migrations...');
+    const migrateEnvAdmin = require('./database/migrations/migrate-env-admin.cjs');
+    migrateEnvAdmin();
+
     app.listen(PORT, () => {
       console.log(`🚀 Server running on port ${PORT}`);
       console.log(`📝 API: http://localhost:${PORT}/api`);

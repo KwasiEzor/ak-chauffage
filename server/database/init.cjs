@@ -47,6 +47,65 @@ function initializeDatabase() {
     CREATE INDEX IF NOT EXISTS idx_contacts_email ON contacts(email);
   `);
 
+  // Create admins table
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS admins (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      username TEXT UNIQUE NOT NULL,
+      email TEXT UNIQUE,
+      password_hash TEXT NOT NULL,
+      role TEXT DEFAULT 'admin' CHECK(role IN ('admin', 'super_admin')),
+      active BOOLEAN DEFAULT 1,
+      last_login DATETIME,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    )
+  `);
+
+  // Create indexes for admins
+  db.exec(`
+    CREATE INDEX IF NOT EXISTS idx_admins_username ON admins(username);
+    CREATE INDEX IF NOT EXISTS idx_admins_email ON admins(email);
+  `);
+
+  // Create system_settings table for SMTP and other configurations
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS system_settings (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      key TEXT UNIQUE NOT NULL,
+      value TEXT,
+      encrypted BOOLEAN DEFAULT 0,
+      category TEXT DEFAULT 'general',
+      description TEXT,
+      updated_by INTEGER,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (updated_by) REFERENCES admins(id)
+    )
+  `);
+
+  // Create audit_logs table for tracking changes
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS audit_logs (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      admin_id INTEGER NOT NULL,
+      action TEXT NOT NULL,
+      entity_type TEXT NOT NULL,
+      entity_id TEXT,
+      details TEXT,
+      ip_address TEXT,
+      user_agent TEXT,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (admin_id) REFERENCES admins(id)
+    )
+  `);
+
+  // Create index for audit logs
+  db.exec(`
+    CREATE INDEX IF NOT EXISTS idx_audit_logs_admin ON audit_logs(admin_id);
+    CREATE INDEX IF NOT EXISTS idx_audit_logs_created_at ON audit_logs(created_at DESC);
+  `);
+
   console.log('✅ Database initialized:', DB_PATH);
 }
 
