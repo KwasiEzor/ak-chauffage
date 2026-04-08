@@ -1,4 +1,6 @@
 import { Flame, Phone, Mail, MapPin, Globe2, Camera, BriefcaseBusiness, ArrowUp } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { useContent } from '../contexts/ContentContext';
 
 const quickLinks = [
   { label: 'Installation chaudière', href: '#services' },
@@ -8,19 +10,9 @@ const quickLinks = [
   { label: 'Rénovation énergétique', href: '#services' },
 ];
 
-const legalLinks = [
-  { label: 'Mentions légales', href: '#' },
-  { label: 'Politique de confidentialité', href: '#' },
-  { label: 'CGV', href: '#' },
-];
-
-const cities = [
-  'Charleroi', 'Gilly', 'Marcinelle',
-  'Montignies-sur-Sambre', 'Jumet', 'Gosselies',
-  'Lodelinsart', 'Dampremy', 'Roux'
-];
-
 export default function Footer() {
+  const { settings } = useContent();
+
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -33,6 +25,10 @@ export default function Footer() {
       }
     }
   };
+
+  // Use settings data or fallback to default values
+  const cities = settings?.serviceArea.cities || [];
+  const legalLinks = settings?.legal.links || [];
 
   return (
     <footer className="bg-[#08080c] border-t border-white/5">
@@ -133,13 +129,13 @@ export default function Footer() {
           </p>
           <div className="flex items-center gap-6">
             {legalLinks.map((link, index) => (
-              <a
+              <Link
                 key={index}
-                href={link.href}
+                to={link.href}
                 className="text-zinc-500 hover:text-orange-400 text-sm transition-colors"
               >
                 {link.label}
-              </a>
+              </Link>
             ))}
           </div>
         </div>

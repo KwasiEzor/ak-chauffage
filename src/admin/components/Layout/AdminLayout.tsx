@@ -13,6 +13,7 @@ import {
   LogOut,
   Menu,
   X,
+  FileText,
 } from 'lucide-react';
 import { useState } from 'react';
 
@@ -28,6 +29,7 @@ const navigation = [
   { name: 'Projects', href: '/admin/projects', icon: Briefcase },
   { name: 'Hero Section', href: '/admin/hero', icon: Flame },
   { name: 'Media Library', href: '/admin/media', icon: Image },
+  { name: 'Legal Pages', href: '/admin/legal', icon: FileText },
   { name: 'Settings', href: '/admin/settings', icon: Settings },
 ];
 

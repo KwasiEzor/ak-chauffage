@@ -82,6 +82,17 @@ export const api = {
     const response = await fetch(`${API_BASE_URL}/settings`);
     return handleResponse(response);
   },
+
+  // Legal pages endpoints
+  async getLegalPages() {
+    const response = await fetch(`${API_BASE_URL}/legal`);
+    return handleResponse(response);
+  },
+
+  async getLegalPage(slug: string) {
+    const response = await fetch(`${API_BASE_URL}/legal/${slug}`);
+    return handleResponse(response);
+  },
 };
 
 // Admin API (auth required)
@@ -136,6 +147,15 @@ export const adminApi = {
     const response = await fetchWithAuth('/settings', {
       method: 'PUT',
       body: JSON.stringify(settings),
+    });
+    return handleResponse(response);
+  },
+
+  // Legal pages management endpoints
+  async updateLegalPage(id: string, page: any) {
+    const response = await fetchWithAuth(`/legal/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(page),
     });
     return handleResponse(response);
   },

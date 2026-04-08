@@ -23,6 +23,7 @@ app.use('/api/auth', require('./routes/auth.cjs'));
 app.use('/api/content', require('./routes/content.cjs'));
 app.use('/api/settings', require('./routes/settings.cjs'));
 app.use('/api/media', require('./routes/media.cjs'));
+app.use('/api/legal', require('./routes/legal.cjs'));
 
 // Health check
 app.get('/api/health', (req, res) => {

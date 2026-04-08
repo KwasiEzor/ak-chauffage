@@ -1,5 +1,6 @@
 import { Routes, Route } from 'react-router-dom';
 import HomePage from './pages/HomePage';
+import LegalPage from './pages/LegalPage';
 import { useContent } from './contexts/ContentContext';
 
 // Admin imports (lazy loaded for code splitting)
@@ -45,6 +46,7 @@ function App() {
     <Routes>
       {/* Public routes */}
       <Route path="/" element={<HomePage />} />
+      <Route path="/legal/:slug" element={<LegalPage />} />
 
       {/* Admin routes */}
       <Route

@@ -9,6 +9,8 @@ import CTABanner from '../components/CTABanner';
 import Contact from '../components/Contact';
 import Footer from '../components/Footer';
 import FloatingCTA from '../components/FloatingCTA';
+import CookieBanner from '../components/CookieBanner';
+import CookieSettingsButton from '../components/CookieSettingsButton';
 
 export default function HomePage() {
   return (
@@ -48,6 +50,10 @@ export default function HomePage() {
 
       {/* Floating CTA for mobile */}
       <FloatingCTA />
+
+      {/* Cookie Consent System */}
+      <CookieBanner />
+      <CookieSettingsButton />
     </div>
   );
 }

@@ -9,6 +9,7 @@ import ProjectsEditor from './pages/ProjectsEditor';
 import MediaLibrary from './pages/MediaLibrary';
 import SettingsEditor from './pages/SettingsEditor';
 import HeroEditor from './pages/HeroEditor';
+import LegalEditor from './pages/LegalEditor';
 import AdminLayout from './components/Layout/AdminLayout';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -46,6 +47,7 @@ export default function AdminApp() {
                 <Route path="projects" element={<ProjectsEditor />} />
                 <Route path="hero" element={<HeroEditor />} />
                 <Route path="media" element={<MediaLibrary />} />
+                <Route path="legal" element={<LegalEditor />} />
                 <Route path="settings" element={<SettingsEditor />} />
                 <Route path="*" element={<Navigate to="/admin" replace />} />
               </Routes>

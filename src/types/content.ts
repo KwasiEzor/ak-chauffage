@@ -101,6 +101,9 @@ export interface SiteContent {
   ctaBanner: CTABanner;
 }
 
+// Import GDPR types
+import type { GDPRConfig } from './gdpr';
+
 // Settings types
 export interface ContactInfo {
   phone: string;
@@ -153,6 +156,7 @@ export interface SiteSettings {
       label: string;
       href: string;
     }[];
+    gdpr: GDPRConfig;
   };
   navigation: {
     label: string;
