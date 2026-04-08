@@ -3,6 +3,7 @@ import { useContent } from '../../contexts/ContentContext';
 import { adminApi } from '../../utils/api';
 import { Service } from '../../types/content';
 import { Save, AlertCircle, CheckCircle2, Pencil, Search, Filter, CheckSquare, Square } from 'lucide-react';
+import ImageUpload from '../components/ImageUpload';
 
 export default function ServicesEditor() {
   const { content, refetch } = useContent();
@@ -331,6 +332,11 @@ export default function ServicesEditor() {
                         className="w-full bg-zinc-900 border border-zinc-700 rounded-lg px-4 py-2 text-white resize-none"
                       />
                     </div>
+                    <ImageUpload
+                      currentValue={service.image}
+                      onUploadComplete={(url) => updateService(service.id, 'image', url)}
+                      label="Service Image"
+                    />
                   </div>
                 ) : (
                   <div>
