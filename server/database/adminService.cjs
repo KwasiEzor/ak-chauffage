@@ -1,5 +1,5 @@
 const db = require('./init.cjs');
-const bcrypt = require('bcryptjs');
+const bcrypt = require('bcrypt');
 
 class AdminService {
   /**
