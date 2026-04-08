@@ -58,15 +58,23 @@ const apiLimiter = rateLimit({
   legacyHeaders: false,
 });
 
-// Rate limiting - Contact form (stricter)
+// Rate limiting - Login (prevent brute force)
+const loginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 5, // 5 login attempts per 15 minutes
+  message: 'Trop de tentatives de connexion. Veuillez réessayer dans 15 minutes.',
+  skipSuccessfulRequests: true, // Don't count successful logins
+});
+
+// Rate limiting - Contact form
 const contactLimiter = rateLimit({
   windowMs: 60 * 60 * 1000, // 1 hour
-  max: 5, // Limit to 5 submissions per hour
+  max: 10, // Increased to 10 submissions per hour (allows retries)
   message: 'Trop de soumissions. Veuillez réessayer dans une heure.',
   skipSuccessfulRequests: false,
 });
 
-// Apply rate limiting
+// Apply rate limiting to general API (admin routes are protected by auth)
 app.use('/api/', apiLimiter);
 
 // CORS
@@ -83,7 +91,7 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
 // API Routes
-app.use('/api/auth', require('./routes/auth.cjs'));
+app.use('/api/auth', loginLimiter, require('./routes/auth.cjs'));
 app.use('/api/content', require('./routes/content.cjs'));
 app.use('/api/settings', require('./routes/settings.cjs'));
 app.use('/api/media', require('./routes/media.cjs'));
