@@ -55,6 +55,9 @@ export default function Hero() {
           src="/images/hero-technician.jpg"
           alt="Chauffagiste professionnel"
           className="w-full h-full object-cover"
+          loading="eager"
+          fetchPriority="high"
+          decoding="async"
         />
         <div className="absolute inset-0 bg-gradient-to-r from-black/95 via-black/80 to-black/60" />
         <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0f] via-transparent to-transparent" />

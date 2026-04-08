@@ -14,7 +14,9 @@ export default function Contact() {
     phone: '',
     service: '',
     message: '',
+    website: '', // Honeypot field
   });
+  const [formStartTime, setFormStartTime] = useState<number>(0);
   const { content, settings } = useContent();
 
   useEffect(() => {
@@ -34,19 +36,70 @@ export default function Contact() {
     return () => observer.disconnect();
   }, []);
 
+  // Track form start time (anti-bot: forms filled too fast are suspicious)
+  useEffect(() => {
+    setFormStartTime(Date.now());
+  }, []);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Anti-spam checks
+    // 1. Honeypot check: If "website" field is filled, it's a bot
+    if (formData.website) {
+      console.warn('Honeypot triggered - spam detected');
+      // Silently fail (don't tell bots they failed)
+      setIsSubmitting(true);
+      await new Promise((resolve) => setTimeout(resolve, 1500));
+      setIsSubmitting(false);
+      setIsSubmitted(true);
+      return;
+    }
+
+    // 2. Time-based check: Humans take at least 3 seconds to fill a form
+    const timeSpent = Date.now() - formStartTime;
+    if (timeSpent < 3000) {
+      console.warn('Form submitted too fast - possible bot');
+      // Silently fail
+      setIsSubmitting(true);
+      await new Promise((resolve) => setTimeout(resolve, 1500));
+      setIsSubmitting(false);
+      setIsSubmitted(true);
+      return;
+    }
+
     setIsSubmitting(true);
-    
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-    
-    setIsSubmitting(false);
-    setIsSubmitted(true);
-    setFormData({ name: '', email: '', phone: '', service: '', message: '' });
-    
-    // Reset success message after 5 seconds
-    setTimeout(() => setIsSubmitted(false), 5000);
+
+    try {
+      // Send to API (replace with real endpoint)
+      const response = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: formData.name,
+          email: formData.email,
+          phone: formData.phone,
+          service: formData.service,
+          message: formData.message,
+          // Don't send honeypot field to server
+        }),
+      });
+
+      if (!response.ok) throw new Error('Submission failed');
+
+      setIsSubmitted(true);
+      setFormData({ name: '', email: '', phone: '', service: '', message: '', website: '' });
+      setFormStartTime(Date.now()); // Reset timer
+
+      // Reset success message after 5 seconds
+      setTimeout(() => setIsSubmitted(false), 5000);
+    } catch (error) {
+      console.error('Form submission error:', error);
+      // Show error to user
+      alert('Une erreur est survenue. Veuillez réessayer ou nous appeler directement.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const contactInfo = [
@@ -168,6 +221,20 @@ export default function Contact() {
                       onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                       className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-zinc-500 focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-colors"
                       placeholder="jean.dupont@email.com"
+                    />
+                  </div>
+
+                  {/* Honeypot field - hidden from users, visible to bots */}
+                  <div className="hidden" aria-hidden="true">
+                    <label htmlFor="website">Website (leave blank)</label>
+                    <input
+                      type="text"
+                      id="website"
+                      name="website"
+                      tabIndex={-1}
+                      autoComplete="off"
+                      value={formData.website}
+                      onChange={(e) => setFormData({ ...formData, website: e.target.value })}
                     />
                   </div>
 

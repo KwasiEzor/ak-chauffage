@@ -1,0 +1,12 @@
+# robots.txt for AK CHAUFFAGE
+
+# Allow all bots to crawl public pages
+User-agent: *
+Allow: /
+
+# Disallow admin and API endpoints
+Disallow: /admin/
+Disallow: /api/
+
+# Sitemap location
+Sitemap: https://www.ak-chauffage.be/sitemap.xml

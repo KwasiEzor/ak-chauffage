@@ -77,6 +77,8 @@ export default function Projects() {
                   src={project.image}
                   alt={project.title}
                   className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                  loading="lazy"
+                  decoding="async"
                 />
               </div>
 
@@ -170,6 +172,8 @@ export default function Projects() {
                 src={selectedProject.image}
                 alt={selectedProject.title}
                 className="w-full h-full object-cover"
+                loading="eager"
+                decoding="async"
               />
             </div>
             <div className="p-8">

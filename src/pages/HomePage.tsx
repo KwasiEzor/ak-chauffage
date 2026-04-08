@@ -11,10 +11,14 @@ import Footer from '../components/Footer';
 import FloatingCTA from '../components/FloatingCTA';
 import CookieBanner from '../components/CookieBanner';
 import CookieSettingsButton from '../components/CookieSettingsButton';
+import StructuredData from '../components/StructuredData';
 
 export default function HomePage() {
   return (
     <div className="min-h-screen bg-[#0a0a0f] text-white">
+      {/* SEO - Structured Data */}
+      <StructuredData />
+
       {/* Navigation */}
       <Header />
 

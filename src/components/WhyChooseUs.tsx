@@ -91,6 +91,8 @@ export default function WhyChooseUs() {
                   src="/images/service-van.jpg"
                   alt="Véhicule de service AK CHAUFFAGE"
                   className="w-full aspect-[4/3] object-cover"
+                  loading="lazy"
+                  decoding="async"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0f]/80 via-transparent to-transparent" />
               </div>
