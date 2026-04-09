@@ -1,4 +1,4 @@
-const db = require('../init.cjs');
+const { db, DB_TYPE } = require('../connection.cjs');
 
 /**
  * Migration: Add visitor analytics table
@@ -6,8 +6,14 @@ const db = require('../init.cjs');
  */
 function addAnalyticsTable() {
   try {
-    // Check if table already exists
-    const tableExists = db
+    // Skip for PostgreSQL (handled by migrate-to-postgres.cjs)
+    if (DB_TYPE === 'postgres') {
+      console.log('✅ visitor_analytics table already exists');
+      return;
+    }
+
+    // Check if table already exists (SQLite only)
+    const tableExists = db.sqlite
       .prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='visitor_analytics'")
       .get();
 

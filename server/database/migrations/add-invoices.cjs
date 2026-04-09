@@ -1,4 +1,4 @@
-const db = require('../init.cjs');
+const { db, DB_TYPE } = require('../connection.cjs');
 
 /**
  * Migration: Add invoice tables
@@ -6,8 +6,15 @@ const db = require('../init.cjs');
  */
 function addInvoiceTables() {
   try {
-    // Check if invoices table already exists
-    const invoicesTableExists = db
+    // Skip for PostgreSQL (handled by migrate-to-postgres.cjs)
+    if (DB_TYPE === 'postgres') {
+      console.log('✅ invoices table already exists');
+      console.log('✅ invoice_line_items table already exists');
+      return;
+    }
+
+    // Check if invoices table already exists (SQLite only)
+    const invoicesTableExists = db.sqlite
       .prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='invoices'")
       .get();
 
@@ -49,8 +56,8 @@ function addInvoiceTables() {
       console.log('✅ Created invoices table with indexes');
     }
 
-    // Check if invoice_line_items table already exists
-    const lineItemsTableExists = db
+    // Check if invoice_line_items table already exists (SQLite only)
+    const lineItemsTableExists = db.sqlite
       .prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='invoice_line_items'")
       .get();
 
