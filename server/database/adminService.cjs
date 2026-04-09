@@ -6,21 +6,21 @@ class AdminService {
    * Get admin by username
    */
   static async getByUsername(username) {
-    return await db.prepare('SELECT * FROM admins WHERE username = ? AND is_active = 1').get(username);
+    return await db.prepare('SELECT * FROM admins WHERE username = ? AND active = 1').get(username);
   }
 
   /**
    * Get admin by ID
    */
   static async getById(id) {
-    return await db.prepare('SELECT id, username, email, role, is_active, last_login, created_at FROM admins WHERE id = ?').get(id);
+    return await db.prepare('SELECT id, username, email, role, active, last_login, created_at FROM admins WHERE id = ?').get(id);
   }
 
   /**
    * Get all admins
    */
   static async getAll() {
-    return await db.prepare('SELECT id, username, email, role, is_active, last_login, created_at FROM admins ORDER BY created_at DESC').all();
+    return await db.prepare('SELECT id, username, email, role, active, last_login, created_at FROM admins ORDER BY created_at DESC').all();
   }
 
   /**
@@ -130,7 +130,7 @@ class AdminService {
   static async deactivate(id) {
     const stmt = db.prepare(`
       UPDATE admins
-      SET is_active = 0, updated_at = CURRENT_TIMESTAMP
+      SET active = 0, updated_at = CURRENT_TIMESTAMP
       WHERE id = ?
     `);
 
@@ -145,7 +145,7 @@ class AdminService {
   static async reactivate(id) {
     const stmt = db.prepare(`
       UPDATE admins
-      SET is_active = 1, updated_at = CURRENT_TIMESTAMP
+      SET active = 1, updated_at = CURRENT_TIMESTAMP
       WHERE id = ?
     `);
 
