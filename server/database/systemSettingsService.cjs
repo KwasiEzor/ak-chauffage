@@ -1,4 +1,4 @@
-const db = require('./init.cjs');
+const { db } = require('./connection.cjs');
 const crypto = require('crypto');
 
 // Encryption key from environment (must be 32 bytes for AES-256)

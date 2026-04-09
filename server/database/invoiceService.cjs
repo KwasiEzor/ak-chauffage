@@ -1,4 +1,4 @@
-const db = require('./init.cjs');
+const { db } = require('./connection.cjs');
 
 /**
  * Invoice Service
