@@ -19,12 +19,32 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Check if user is authenticated on mount
   useEffect(() => {
     const verifyAuth = async () => {
+      // Only verify if we have a token or we're on an admin route
+      const hasToken = localStorage.getItem('admin_token');
+      const isAdminRoute = window.location.pathname.startsWith('/admin');
+
+      if (!hasToken && !isAdminRoute) {
+        // No token and not on admin route - skip verification
+        setLoading(false);
+        return;
+      }
+
+      if (!hasToken) {
+        // No token but on admin route - just stop loading
+        setLoading(false);
+        return;
+      }
+
+      // We have a token - verify it
       try {
         const response = await adminApi.verifyToken();
         if (response.success && response.user) {
           setUser(response.user);
+        } else {
+          removeToken();
         }
       } catch (error) {
+        // Silent fail - token is invalid, remove it
         removeToken();
       } finally {
         setLoading(false);

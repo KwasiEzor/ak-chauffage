@@ -1,0 +1,44 @@
+services:
+  # Web Service (Node.js Backend + React Frontend)
+  - type: web
+    name: ak-chauffage
+    runtime: node
+    plan: free
+    region: frankfurt  # Closest to Belgium
+    buildCommand: npm install && npm run build
+    startCommand: npm run start:prod
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: JWT_SECRET
+        generateValue: true
+      - key: ADMIN_USERNAME
+        sync: false
+      - key: ADMIN_PASSWORD_HASH
+        sync: false
+      - key: RESEND_API_KEY
+        sync: false
+      - key: SMTP_FROM
+        value: AK CHAUFFAGE <noreply@ak-chauffage.be>
+      - key: ADMIN_EMAIL
+        value: contact@ak-chauffage.be
+      - key: CLOUDINARY_CLOUD_NAME
+        sync: false
+      - key: CLOUDINARY_API_KEY
+        sync: false
+      - key: CLOUDINARY_API_SECRET
+        sync: false
+      - key: DATABASE_URL
+        fromDatabase:
+          name: ak-chauffage-db
+          property: connectionString
+    healthCheckPath: /api/health
+
+databases:
+  - name: ak-chauffage-db
+    databaseName: ak_chauffage
+    plan: free
+    region: frankfurt
+    user: ak_chauffage

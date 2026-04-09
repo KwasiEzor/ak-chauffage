@@ -1,6 +1,16 @@
 const nodemailer = require('nodemailer');
 const SystemSettingsService = require('../database/systemSettingsService.cjs');
 
+// Check for Resend API key
+const USE_RESEND = !!process.env.RESEND_API_KEY;
+let resendClient;
+
+if (USE_RESEND) {
+  const { Resend } = require('resend');
+  resendClient = new Resend(process.env.RESEND_API_KEY);
+  console.log('✅ Email service: Resend (Production)');
+}
+
 /**
  * Email transporter configuration
  * Uses SMTP credentials from database (if set) or falls back to environment variables
@@ -31,8 +41,48 @@ const createTransporter = () => {
 
   console.log(`📧 Using SMTP config from: ${smtpConfig.source}`);
 
-  return nodemailer.createTransport(config);
+  return nodemailer.createTransporter(config);
 };
+
+/**
+ * Send email via Resend or Nodemailer
+ * @param {Object} mailOptions - Email options
+ * @returns {Promise<Object>} - Send result
+ */
+async function sendEmail(mailOptions) {
+  if (USE_RESEND) {
+    try {
+      // Send via Resend
+      const result = await resendClient.emails.send({
+        from: mailOptions.from || 'AK CHAUFFAGE <noreply@ak-chauffage.be>',
+        to: mailOptions.to,
+        subject: mailOptions.subject,
+        html: mailOptions.html,
+        text: mailOptions.text,
+        reply_to: mailOptions.replyTo,
+        attachments: mailOptions.attachments?.map(att => ({
+          filename: att.filename,
+          content: att.content,
+        }))
+      });
+      console.log('✅ Email sent via Resend:', result.id);
+      return { success: true, messageId: result.id, service: 'resend' };
+    } catch (error) {
+      console.error('❌ Resend failed, falling back to SMTP:', error.message);
+      // Fall through to Nodemailer
+    }
+  }
+
+  // Use Nodemailer (fallback or default)
+  const transporter = createTransporter();
+  if (!transporter) {
+    throw new Error('Email service not configured');
+  }
+
+  const info = await transporter.sendMail(mailOptions);
+  console.log('✅ Email sent via SMTP:', info.messageId);
+  return { success: true, messageId: info.messageId, service: 'nodemailer' };
+}
 
 /**
  * Send contact form email to business owner
@@ -144,8 +194,7 @@ Reçu le ${new Date().toLocaleString('fr-BE')}
   };
 
   try {
-    const info = await transporter.sendMail(mailOptions);
-    console.log('✅ Email sent successfully:', info.messageId);
+    await sendEmail(mailOptions);
     return true;
   } catch (error) {
     console.error('❌ Email sending failed:', error.message);
@@ -245,7 +294,7 @@ www.ak-chauffage.be
   };
 
   try {
-    await transporter.sendMail(mailOptions);
+    await sendEmail(mailOptions);
     console.log('✅ Auto-response sent to:', email);
     return true;
   } catch (error) {
@@ -255,7 +304,151 @@ www.ak-chauffage.be
   }
 }
 
+/**
+ * Send invoice email to client with PDF attachment
+ * @param {Object} params - Email parameters
+ * @param {Object} params.invoice - Invoice data
+ * @param {Buffer} params.pdfBuffer - PDF file as buffer
+ * @param {string} params.clientEmail - Client email address
+ * @returns {Promise<boolean>} - Success status
+ */
+async function sendInvoiceEmail({ invoice, pdfBuffer, clientEmail }) {
+  const transporter = createTransporter();
+
+  // If email not configured, just log
+  if (!transporter) {
+    console.log('📧 Invoice email (email not configured):', {
+      invoiceNumber: invoice.invoice_number,
+      clientEmail,
+    });
+    return false;
+  }
+
+  const smtpConfig = SystemSettingsService.getSMTPConfig();
+
+  // Email to client with invoice PDF
+  const mailOptions = {
+    from: `"AK CHAUFFAGE" <${smtpConfig.from || smtpConfig.user}>`,
+    to: clientEmail,
+    subject: `Facture ${invoice.invoice_number} - AK CHAUFFAGE`,
+    html: `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <style>
+          body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+          .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+          .header { background: linear-gradient(135deg, #f97316 0%, #fb923c 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
+          .content { background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px; }
+          .invoice-summary { background: white; padding: 20px; border-radius: 6px; margin: 20px 0; border-left: 4px solid #f97316; }
+          .footer { text-align: center; margin-top: 30px; padding: 20px; background: #fff; border-radius: 6px; }
+          .highlight { color: #f97316; font-weight: bold; }
+          .amount { font-size: 24px; color: #f97316; font-weight: bold; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <h1 style="margin: 0; font-size: 28px;">🔥 AK CHAUFFAGE</h1>
+            <p style="margin: 10px 0 0 0; opacity: 0.9;">Votre facture est prête</p>
+          </div>
+
+          <div class="content">
+            <h2 style="color: #f97316; margin-top: 0;">Bonjour ${invoice.client_name},</h2>
+
+            <p>Veuillez trouver ci-joint votre facture <strong>${invoice.invoice_number}</strong>.</p>
+
+            <div class="invoice-summary">
+              <h3 style="color: #f97316; margin-top: 0;">Détails de la facture</h3>
+              <p style="margin: 10px 0;">
+                <strong>Numéro:</strong> ${invoice.invoice_number}<br>
+                <strong>Date d'émission:</strong> ${new Date(invoice.issue_date).toLocaleDateString('fr-BE')}<br>
+                ${invoice.due_date ? `<strong>Date d'échéance:</strong> ${new Date(invoice.due_date).toLocaleDateString('fr-BE')}<br>` : ''}
+              </p>
+              <p style="margin: 20px 0;">
+                <strong>Montant total:</strong><br>
+                <span class="amount">€${invoice.total.toFixed(2)}</span>
+              </p>
+              ${invoice.notes ? `<p style="margin: 15px 0; padding: 15px; background: #fef3c7; border-radius: 4px; border-left: 3px solid #f59e0b;"><strong>Note:</strong> ${invoice.notes}</p>` : ''}
+            </div>
+
+            <p>Pour toute question concernant cette facture, n'hésitez pas à nous contacter.</p>
+
+            <div style="background: white; padding: 20px; border-radius: 6px; margin: 20px 0;">
+              <h3 style="color: #f97316; margin-top: 0;">Coordonnées bancaires</h3>
+              <p style="margin: 5px 0; font-size: 14px;">
+                <strong>Bénéficiaire:</strong> AK CHAUFFAGE<br>
+                <strong>IBAN:</strong> [À compléter]<br>
+                <strong>Communication:</strong> ${invoice.invoice_number}
+              </p>
+            </div>
+
+            <p>Merci pour votre confiance,<br><strong>L'équipe AK CHAUFFAGE</strong></p>
+          </div>
+
+          <div class="footer">
+            <p style="margin: 0 0 10px 0;">
+              📞 <a href="tel:+32488459976" style="color: #f97316; text-decoration: none;">+32 488 45 99 76</a><br>
+              📧 <a href="mailto:contact@ak-chauffage.be" style="color: #f97316; text-decoration: none;">contact@ak-chauffage.be</a>
+            </p>
+            <p style="margin: 10px 0 0 0; font-size: 12px; color: #666;">
+              AK CHAUFFAGE - Chauffagiste expert à Charleroi<br>
+              <a href="https://www.ak-chauffage.be" style="color: #f97316; text-decoration: none;">www.ak-chauffage.be</a>
+            </p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `,
+    text: `
+Bonjour ${invoice.client_name},
+
+Veuillez trouver ci-joint votre facture ${invoice.invoice_number}.
+
+Détails de la facture:
+- Numéro: ${invoice.invoice_number}
+- Date d'émission: ${new Date(invoice.issue_date).toLocaleDateString('fr-BE')}
+${invoice.due_date ? `- Date d'échéance: ${new Date(invoice.due_date).toLocaleDateString('fr-BE')}` : ''}
+- Montant total: €${invoice.total.toFixed(2)}
+
+${invoice.notes ? `Note: ${invoice.notes}\n` : ''}
+
+Coordonnées bancaires:
+Bénéficiaire: AK CHAUFFAGE
+IBAN: [À compléter]
+Communication: ${invoice.invoice_number}
+
+Pour toute question concernant cette facture, n'hésitez pas à nous contacter.
+
+Merci pour votre confiance,
+L'équipe AK CHAUFFAGE
+
+---
+📞 +32 488 45 99 76
+📧 contact@ak-chauffage.be
+AK CHAUFFAGE - Chauffagiste expert à Charleroi
+www.ak-chauffage.be
+    `.trim(),
+    attachments: [
+      {
+        filename: `facture-${invoice.invoice_number}.pdf`,
+        content: pdfBuffer,
+        contentType: 'application/pdf',
+      },
+    ],
+  };
+
+  try {
+    await sendEmail(mailOptions);
+    return true;
+  } catch (error) {
+    console.error('❌ Invoice email sending failed:', error.message);
+    throw error;
+  }
+}
+
 module.exports = {
   sendContactEmail,
   sendAutoResponse,
+  sendInvoiceEmail,
 };

@@ -148,6 +148,11 @@ export interface SiteSettings {
     instagram: string;
     linkedin: string;
   };
+  whatsapp: {
+    enabled: boolean;
+    phoneNumber: string;
+    defaultMessage: string;
+  };
   legal: {
     companyName: string;
     registrationNumber: string;

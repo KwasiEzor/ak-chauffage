@@ -17,6 +17,8 @@ import {
   Mail,
   User,
   Server,
+  TrendingUp,
+  Receipt,
 } from 'lucide-react';
 import { useState } from 'react';
 
@@ -27,6 +29,8 @@ interface AdminLayoutProps {
 const navigation = [
   { name: 'Dashboard', href: '/admin', icon: LayoutDashboard },
   { name: 'Contacts', href: '/admin/contacts', icon: Mail },
+  { name: 'Analytics', href: '/admin/analytics', icon: TrendingUp },
+  { name: 'Factures', href: '/admin/invoices', icon: Receipt },
   { name: 'Services', href: '/admin/services', icon: Wrench },
   { name: 'FAQs', href: '/admin/faqs', icon: MessageSquare },
   { name: 'Testimonials', href: '/admin/testimonials', icon: Star },

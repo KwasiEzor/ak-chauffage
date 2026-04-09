@@ -31,7 +31,7 @@ export default function FloatingCTA() {
       </div>
 
       {/* Desktop Floating Buttons */}
-      <div className={`fixed bottom-8 right-8 hidden md:flex flex-col gap-3 z-50 transition-all duration-300 ${
+      <div className={`fixed bottom-24 right-8 hidden md:flex flex-col gap-3 z-50 transition-all duration-300 ${
         isVisible ? 'translate-y-0 opacity-100' : 'translate-y-full opacity-0'
       }`}>
         {isExpanded && (
@@ -58,9 +58,11 @@ export default function FloatingCTA() {
         )}
         <button
           onClick={() => setIsExpanded(!isExpanded)}
+          aria-label={isExpanded ? 'Fermer le menu' : 'Ouvrir le menu de contact'}
+          aria-expanded={isExpanded}
           className={`w-14 h-14 rounded-full flex items-center justify-center shadow-lg transition-all ${
-            isExpanded 
-              ? 'bg-zinc-800 text-white rotate-45' 
+            isExpanded
+              ? 'bg-zinc-800 text-white rotate-45'
               : 'bg-gradient-to-r from-orange-500 to-amber-500 text-white pulse-glow'
           }`}
         >

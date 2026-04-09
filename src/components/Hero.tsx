@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { Phone, ArrowRight, CheckCircle2, Clock, Shield, Award } from 'lucide-react';
 import { useContent } from '../contexts/ContentContext';
+import OptimizedImage from './OptimizedImage';
 
 export default function Hero() {
   const heroRef = useRef<HTMLDivElement>(null);
@@ -51,13 +52,11 @@ export default function Hero() {
     >
       {/* Background Image */}
       <div className="absolute inset-0 z-0">
-        <img
+        <OptimizedImage
           src="/images/hero-technician.jpg"
           alt="Chauffagiste professionnel"
           className="w-full h-full object-cover"
-          loading="eager"
-          fetchPriority="high"
-          decoding="async"
+          priority
         />
         <div className="absolute inset-0 bg-gradient-to-r from-black/95 via-black/80 to-black/60" />
         <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0f] via-transparent to-transparent" />

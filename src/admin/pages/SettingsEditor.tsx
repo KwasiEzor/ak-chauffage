@@ -344,6 +344,48 @@ export default function SettingsEditor() {
             </div>
           </div>
         </div>
+
+        {/* WhatsApp Configuration */}
+        <div className="bg-zinc-800 border border-zinc-700 rounded-xl p-6">
+          <h2 className="text-xl font-bold text-white mb-4">WhatsApp Contact Button</h2>
+          <div className="space-y-4">
+            <div className="flex items-center gap-3">
+              <input
+                type="checkbox"
+                id="whatsapp-enabled"
+                checked={settings.whatsapp.enabled}
+                onChange={(e) => updateField('whatsapp.enabled', e.target.checked)}
+                className="w-4 h-4 rounded border-zinc-700 bg-zinc-900 text-orange-500 focus:ring-orange-500 focus:ring-offset-zinc-800"
+              />
+              <label htmlFor="whatsapp-enabled" className="text-sm font-medium text-zinc-300">
+                Enable WhatsApp floating button
+              </label>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-zinc-400 mb-2">
+                Phone Number (international format)
+              </label>
+              <input
+                type="tel"
+                value={settings.whatsapp.phoneNumber}
+                onChange={(e) => updateField('whatsapp.phoneNumber', e.target.value)}
+                placeholder="+32488459976"
+                className="w-full bg-zinc-900 border border-zinc-700 rounded-lg px-4 py-2 text-white"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-zinc-400 mb-2">
+                Default Message
+              </label>
+              <textarea
+                value={settings.whatsapp.defaultMessage}
+                onChange={(e) => updateField('whatsapp.defaultMessage', e.target.value)}
+                rows={3}
+                className="w-full bg-zinc-900 border border-zinc-700 rounded-lg px-4 py-2 text-white resize-none"
+              />
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );

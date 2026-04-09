@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Flame, Wrench, Clock, Thermometer, Droplets, Home, ArrowRight } from 'lucide-react';
 import { useContent } from '../contexts/ContentContext';
+import OptimizedImage from './OptimizedImage';
 
 // Icon mapping
 const iconMap: Record<string, any> = {
@@ -90,12 +91,10 @@ export default function Services() {
             >
               {/* Image */}
               <div className="relative h-48 overflow-hidden">
-                <img
+                <OptimizedImage
                   src={service.image}
                   alt={service.title}
                   className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                  loading="lazy"
-                  decoding="async"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-[#151520] to-transparent" />
                 

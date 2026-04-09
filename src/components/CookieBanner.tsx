@@ -13,7 +13,7 @@ export default function CookieBanner() {
 
   return (
     <>
-      <div className="fixed bottom-0 left-0 right-0 z-50 p-4 md:bottom-4 md:left-auto md:right-4 md:max-w-md">
+      <div className="fixed bottom-0 left-0 right-0 z-[60] p-4 md:bottom-4 md:left-auto md:right-4 md:max-w-md">
         <div className="glass-strong rounded-2xl p-6 shadow-2xl">
           {/* Title */}
           <div className="mb-3 flex items-center gap-2">

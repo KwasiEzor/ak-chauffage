@@ -4,6 +4,8 @@ const cors = require('cors');
 const path = require('path');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
+const cookieParser = require('cookie-parser');
+const compression = require('compression');
 const { ensureDataDir } = require('./utils/fileManager.cjs');
 
 const app = express();
@@ -83,15 +85,43 @@ app.use(cors({
   credentials: true,
 }));
 
+// Enable Gzip/Brotli compression
+app.use(compression({
+  filter: (req, res) => {
+    if (req.headers['x-no-compression']) {
+      return false;
+    }
+    return compression.filter(req, res);
+  },
+  level: 6 // Compression level (0-9, higher = better compression but slower)
+}));
+
 // Body parsing
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-// Serve uploaded files
-app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
+// Cookie parsing
+app.use(cookieParser());
+
+// Analytics tracking middleware (before static files)
+const analyticsMiddleware = require('./middleware/analytics.cjs');
+app.use(analyticsMiddleware);
+
+// Serve uploaded files with caching
+app.use('/uploads', express.static(path.join(__dirname, '../uploads'), {
+  maxAge: '1y', // Cache for 1 year
+  immutable: true,
+  setHeaders: (res, path) => {
+    // Set cache control headers based on file type
+    if (path.endsWith('.jpg') || path.endsWith('.jpeg') || path.endsWith('.png') ||
+        path.endsWith('.webp') || path.endsWith('.gif') || path.endsWith('.svg')) {
+      res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+    }
+  }
+}));
 
 // API Routes
-app.use('/api/auth', loginLimiter, require('./routes/auth.cjs'));
+app.use('/api/auth', require('./routes/auth.cjs'));
 app.use('/api/content', require('./routes/content.cjs'));
 app.use('/api/settings', require('./routes/settings.cjs'));
 app.use('/api/system-settings', require('./routes/systemSettings.cjs'));
@@ -99,6 +129,8 @@ app.use('/api/media', require('./routes/media.cjs'));
 app.use('/api/legal', require('./routes/legal.cjs'));
 app.use('/api/contact', contactLimiter, require('./routes/contact.cjs'));
 app.use('/api/contacts', require('./routes/contacts.cjs'));
+app.use('/api/analytics', require('./routes/analytics.cjs'));
+app.use('/api/invoices', require('./routes/invoices.cjs'));
 
 // Health check
 app.get('/api/health', (req, res) => {
@@ -122,7 +154,11 @@ async function start() {
     // Run database migrations
     console.log('📦 Running database migrations...');
     const migrateEnvAdmin = require('./database/migrations/migrate-env-admin.cjs');
+    const addAnalyticsTable = require('./database/migrations/add-analytics.cjs');
+    const addInvoiceTables = require('./database/migrations/add-invoices.cjs');
     migrateEnvAdmin();
+    addAnalyticsTable();
+    addInvoiceTables();
 
     app.listen(PORT, () => {
       console.log(`🚀 Server running on port ${PORT}`);

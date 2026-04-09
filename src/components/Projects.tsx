@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { ArrowRight, MapPin, Calendar, Expand } from 'lucide-react';
 import { useContent } from '../contexts/ContentContext';
 import type { Project } from '../types/content';
+import OptimizedImage from './OptimizedImage';
 
 export default function Projects() {
   const sectionRef = useRef<HTMLElement>(null);
@@ -73,12 +74,10 @@ export default function Projects() {
             >
               {/* Image */}
               <div className="aspect-[4/3] overflow-hidden">
-                <img
+                <OptimizedImage
                   src={project.image}
                   alt={project.title}
                   className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                  loading="lazy"
-                  decoding="async"
                 />
               </div>
 
@@ -163,17 +162,17 @@ export default function Projects() {
           >
             <button
               onClick={() => setSelectedProject(null)}
+              aria-label="Fermer la fenêtre"
               className="absolute top-4 right-4 z-10 w-10 h-10 rounded-full bg-black/50 flex items-center justify-center text-white hover:bg-orange-500 transition-colors"
             >
               ×
             </button>
             <div className="aspect-video">
-              <img
+              <OptimizedImage
                 src={selectedProject.image}
                 alt={selectedProject.title}
                 className="w-full h-full object-cover"
-                loading="eager"
-                decoding="async"
+                priority
               />
             </div>
             <div className="p-8">

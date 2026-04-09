@@ -183,10 +183,11 @@ export default function Contact() {
                 <form onSubmit={handleSubmit} className="space-y-6">
                   <div className="grid sm:grid-cols-2 gap-6">
                     <div>
-                      <label className="block text-sm font-medium text-zinc-300 mb-2">
+                      <label htmlFor="contact-name" className="block text-sm font-medium text-zinc-300 mb-2">
                         Nom complet *
                       </label>
                       <input
+                        id="contact-name"
                         type="text"
                         required
                         value={formData.name}
@@ -196,10 +197,11 @@ export default function Contact() {
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-zinc-300 mb-2">
+                      <label htmlFor="contact-phone" className="block text-sm font-medium text-zinc-300 mb-2">
                         Téléphone *
                       </label>
                       <input
+                        id="contact-phone"
                         type="tel"
                         required
                         value={formData.phone}
@@ -211,10 +213,11 @@ export default function Contact() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-zinc-300 mb-2">
+                    <label htmlFor="contact-email" className="block text-sm font-medium text-zinc-300 mb-2">
                       Email *
                     </label>
                     <input
+                      id="contact-email"
                       type="email"
                       required
                       value={formData.email}
@@ -239,10 +242,11 @@ export default function Contact() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-zinc-300 mb-2">
+                    <label htmlFor="contact-service" className="block text-sm font-medium text-zinc-300 mb-2">
                       Type de service *
                     </label>
                     <select
+                      id="contact-service"
                       required
                       value={formData.service}
                       onChange={(e) => setFormData({ ...formData, service: e.target.value })}
@@ -258,10 +262,11 @@ export default function Contact() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-zinc-300 mb-2">
+                    <label htmlFor="contact-message" className="block text-sm font-medium text-zinc-300 mb-2">
                       Message
                     </label>
                     <textarea
+                      id="contact-message"
                       rows={4}
                       value={formData.message}
                       onChange={(e) => setFormData({ ...formData, message: e.target.value })}

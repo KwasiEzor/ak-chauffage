@@ -12,6 +12,9 @@ import SystemSettings from './pages/SystemSettings';
 import HeroEditor from './pages/HeroEditor';
 import LegalEditor from './pages/LegalEditor';
 import Contacts from './pages/Contacts';
+import Analytics from './pages/Analytics';
+import Invoices from './pages/Invoices';
+import InvoiceEditor from './pages/InvoiceEditor';
 import Profile from './pages/Profile';
 import AdminLayout from './components/Layout/AdminLayout';
 
@@ -45,6 +48,10 @@ export default function AdminApp() {
               <Routes>
                 <Route index element={<Dashboard />} />
                 <Route path="contacts" element={<Contacts />} />
+                <Route path="analytics" element={<Analytics />} />
+                <Route path="invoices" element={<Invoices />} />
+                <Route path="invoices/new" element={<InvoiceEditor />} />
+                <Route path="invoices/:id" element={<InvoiceEditor />} />
                 <Route path="services" element={<ServicesEditor />} />
                 <Route path="faqs" element={<FAQsEditor />} />
                 <Route path="testimonials" element={<TestimonialsEditor />} />

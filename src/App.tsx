@@ -1,13 +1,12 @@
 import { Routes, Route } from 'react-router-dom';
-import HomePage from './pages/HomePage';
-import LegalPage from './pages/LegalPage';
-import NotFound from './pages/NotFound';
+import { lazy, Suspense } from 'react';
 import ErrorBoundary from './components/ErrorBoundary';
 import { useContent } from './contexts/ContentContext';
 
-// Admin imports (lazy loaded for code splitting)
-import { lazy, Suspense } from 'react';
-
+// Lazy loaded pages for code splitting
+const HomePage = lazy(() => import('./pages/HomePage'));
+const LegalPage = lazy(() => import('./pages/LegalPage'));
+const NotFound = lazy(() => import('./pages/NotFound'));
 const AdminApp = lazy(() => import('./admin/AdminApp'));
 
 function App() {
@@ -44,32 +43,27 @@ function App() {
     );
   }
 
+  const LoadingFallback = () => (
+    <div className="min-h-screen bg-[#0a0a0f] flex items-center justify-center">
+      <div className="w-16 h-16 border-4 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
+    </div>
+  );
+
   return (
     <ErrorBoundary>
-      <Routes>
-        {/* Public routes */}
-        <Route path="/" element={<HomePage />} />
-        <Route path="/legal/:slug" element={<LegalPage />} />
+      <Suspense fallback={<LoadingFallback />}>
+        <Routes>
+          {/* Public routes */}
+          <Route path="/" element={<HomePage />} />
+          <Route path="/legal/:slug" element={<LegalPage />} />
 
-        {/* Admin routes */}
-        <Route
-          path="/admin/*"
-          element={
-            <Suspense
-              fallback={
-                <div className="min-h-screen bg-zinc-900 flex items-center justify-center">
-                  <div className="w-16 h-16 border-4 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
-                </div>
-              }
-            >
-              <AdminApp />
-            </Suspense>
-          }
-        />
+          {/* Admin routes */}
+          <Route path="/admin/*" element={<AdminApp />} />
 
-        {/* 404 fallback */}
-        <Route path="*" element={<NotFound />} />
-      </Routes>
+          {/* 404 fallback */}
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </Suspense>
     </ErrorBoundary>
   );
 }

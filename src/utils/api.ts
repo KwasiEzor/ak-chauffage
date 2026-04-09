@@ -185,6 +185,57 @@ export const adminApi = {
     });
     return handleResponse(response);
   },
+
+  // Analytics endpoints
+  async getAnalyticsStats(days: number = 7) {
+    const response = await fetchWithAuth(`/analytics/stats?days=${days}`);
+    return handleResponse(response);
+  },
+
+  // Invoice endpoints
+  async getInvoices(params?: { status?: string; search?: string; limit?: number; offset?: number }) {
+    const queryParams = new URLSearchParams();
+    if (params?.status) queryParams.append('status', params.status);
+    if (params?.search) queryParams.append('search', params.search);
+    if (params?.limit) queryParams.append('limit', params.limit.toString());
+    if (params?.offset) queryParams.append('offset', params.offset.toString());
+
+    const response = await fetchWithAuth(`/invoices?${queryParams.toString()}`);
+    return handleResponse(response);
+  },
+
+  async getInvoiceStats() {
+    const response = await fetchWithAuth('/invoices/stats');
+    return handleResponse(response);
+  },
+
+  async getInvoice(id: number) {
+    const response = await fetchWithAuth(`/invoices/${id}`);
+    return handleResponse(response);
+  },
+
+  async createInvoice(data: { invoice: any; lineItems: any[] }) {
+    const response = await fetchWithAuth('/invoices', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+    return handleResponse(response);
+  },
+
+  async updateInvoiceStatus(id: number, status: string, paidDate?: string) {
+    const response = await fetchWithAuth(`/invoices/${id}/status`, {
+      method: 'PATCH',
+      body: JSON.stringify({ status, paidDate }),
+    });
+    return handleResponse(response);
+  },
+
+  async deleteInvoice(id: number) {
+    const response = await fetchWithAuth(`/invoices/${id}`, {
+      method: 'DELETE',
+    });
+    return handleResponse(response);
+  },
 };
 
 export default api;

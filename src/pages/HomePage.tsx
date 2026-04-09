@@ -9,6 +9,7 @@ import CTABanner from '../components/CTABanner';
 import Contact from '../components/Contact';
 import Footer from '../components/Footer';
 import FloatingCTA from '../components/FloatingCTA';
+import FloatingWhatsApp from '../components/FloatingWhatsApp';
 import CookieBanner from '../components/CookieBanner';
 import CookieSettingsButton from '../components/CookieSettingsButton';
 import StructuredData from '../components/StructuredData';
@@ -54,6 +55,7 @@ export default function HomePage() {
 
       {/* Floating CTA for mobile */}
       <FloatingCTA />
+      <FloatingWhatsApp />
 
       {/* Cookie Consent System */}
       <CookieBanner />
