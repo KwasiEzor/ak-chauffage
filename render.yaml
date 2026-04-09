@@ -6,7 +6,7 @@ services:
     plan: free
     region: frankfurt  # Closest to Belgium
     buildCommand: npm install --include=dev && npm run build
-    startCommand: npm run start:prod
+    startCommand: npm run migrate:postgres && npm run start:prod
     envVars:
       - key: NODE_ENV
         value: production
