@@ -1,0 +1,224 @@
+{
+  "pages": [
+    {
+      "id": "privacy-policy",
+      "title": "Politique de Confidentialité",
+      "slug": "politique-confidentialite",
+      "lastUpdated": "2026-04-07",
+      "version": "1.0",
+      "active": true,
+      "sections": [
+        {
+          "id": "intro",
+          "heading": "Introduction",
+          "content": "<p>AK CHAUFFAGE accorde une grande importance à la protection de vos données personnelles. Cette politique de confidentialité vous informe sur la manière dont nous collectons, utilisons et protégeons vos informations conformément au Règlement Général sur la Protection des Données (RGPD).</p>",
+          "order": 1
+        },
+        {
+          "id": "data-collected",
+          "heading": "Données Collectées",
+          "content": "<p>Nous collectons les données suivantes :</p><ul><li><strong>Données d'identification :</strong> nom, prénom, adresse</li><li><strong>Données de contact :</strong> adresse e-mail, numéro de téléphone</li><li><strong>Données de navigation :</strong> adresse IP, cookies, pages visitées</li><li><strong>Données contractuelles :</strong> devis, factures, historique des prestations</li></ul>",
+          "order": 2
+        },
+        {
+          "id": "legal-basis",
+          "heading": "Base Légale du Traitement",
+          "content": "<p>Le traitement de vos données personnelles repose sur :</p><ul><li>Votre consentement (article 6.1.a du RGPD)</li><li>L'exécution d'un contrat (article 6.1.b du RGPD)</li><li>Le respect d'une obligation légale (article 6.1.c du RGPD)</li><li>Notre intérêt légitime (article 6.1.f du RGPD)</li></ul>",
+          "order": 3
+        },
+        {
+          "id": "purposes",
+          "heading": "Finalités du Traitement",
+          "content": "<p>Vos données sont utilisées pour :</p><ul><li>Gérer vos demandes de devis et commandes</li><li>Fournir nos services de chauffage et climatisation</li><li>Assurer le suivi client et le service après-vente</li><li>Améliorer nos services et notre site internet</li><li>Respecter nos obligations légales et comptables</li></ul>",
+          "order": 4
+        },
+        {
+          "id": "retention",
+          "heading": "Durée de Conservation",
+          "content": "<p>Nous conservons vos données personnelles pendant les durées suivantes :</p><ul><li><strong>Données clients :</strong> 10 ans (obligations comptables)</li><li><strong>Données de prospection :</strong> 3 ans après le dernier contact</li><li><strong>Cookies analytiques :</strong> 13 mois maximum</li><li><strong>Cookies marketing :</strong> 13 mois maximum</li></ul>",
+          "order": 5
+        },
+        {
+          "id": "rights",
+          "heading": "Vos Droits",
+          "content": "<p>Conformément au RGPD, vous disposez des droits suivants :</p><ul><li><strong>Droit d'accès :</strong> obtenir une copie de vos données</li><li><strong>Droit de rectification :</strong> corriger vos données inexactes</li><li><strong>Droit à l'effacement :</strong> demander la suppression de vos données</li><li><strong>Droit à la limitation :</strong> limiter le traitement de vos données</li><li><strong>Droit à la portabilité :</strong> recevoir vos données dans un format structuré</li><li><strong>Droit d'opposition :</strong> vous opposer au traitement de vos données</li></ul><p>Pour exercer vos droits, contactez-nous à : <a href='mailto:contact@ak-chauffage.be'>contact@ak-chauffage.be</a></p>",
+          "order": 6
+        },
+        {
+          "id": "security",
+          "heading": "Sécurité des Données",
+          "content": "<p>Nous mettons en œuvre des mesures techniques et organisationnelles appropriées pour protéger vos données contre tout accès non autorisé, modification, divulgation ou destruction :</p><ul><li>Chiffrement SSL/TLS pour les transmissions</li><li>Accès restreint aux données personnelles</li><li>Sauvegardes régulières et sécurisées</li><li>Formation du personnel à la protection des données</li></ul>",
+          "order": 7
+        },
+        {
+          "id": "contact",
+          "heading": "Contact et Réclamations",
+          "content": "<p><strong>Responsable du traitement :</strong><br>AK CHAUFFAGE<br>Adresse : [À compléter]<br>E-mail : contact@ak-chauffage.be<br>Téléphone : +32 470 12 34 56</p><p>Vous avez également le droit d'introduire une réclamation auprès de l'autorité de contrôle belge :<br><strong>Autorité de Protection des Données</strong><br>Rue de la Presse 35, 1000 Bruxelles<br>Tél : +32 2 274 48 00<br>E-mail : contact@apd-gba.be</p>",
+          "order": 8
+        }
+      ]
+    },
+    {
+      "id": "cookie-policy",
+      "title": "Politique des Cookies",
+      "slug": "politique-cookies",
+      "lastUpdated": "2026-04-07",
+      "version": "1.0",
+      "active": true,
+      "sections": [
+        {
+          "id": "what-are-cookies",
+          "heading": "Qu'est-ce qu'un Cookie ?",
+          "content": "<p>Un cookie est un petit fichier texte déposé sur votre appareil (ordinateur, tablette, smartphone) lors de la visite d'un site internet. Les cookies permettent de reconnaître votre navigateur et de mémoriser certaines informations vous concernant.</p>",
+          "order": 1
+        },
+        {
+          "id": "cookies-used",
+          "heading": "Cookies Utilisés sur Notre Site",
+          "content": "<h3>Cookies Essentiels</h3><p>Ces cookies sont strictement nécessaires au fonctionnement du site et ne peuvent pas être désactivés.</p><table class='w-full border-collapse'><thead><tr class='border-b border-zinc-700'><th class='text-left p-2'>Cookie</th><th class='text-left p-2'>Finalité</th><th class='text-left p-2'>Durée</th></tr></thead><tbody><tr class='border-b border-zinc-700'><td class='p-2'><code>ak_chauffage_consent</code></td><td class='p-2'>Stockage de vos préférences de cookies</td><td class='p-2'>12 mois</td></tr><tr class='border-b border-zinc-700'><td class='p-2'><code>admin_token</code></td><td class='p-2'>Authentification de l'administrateur</td><td class='p-2'>24 heures</td></tr></tbody></table><h3 class='mt-6'>Cookies Analytiques</h3><p>Ces cookies nous permettent de mesurer l'audience et d'analyser la performance du site.</p><table class='w-full border-collapse mt-4'><thead><tr class='border-b border-zinc-700'><th class='text-left p-2'>Cookie</th><th class='text-left p-2'>Finalité</th><th class='text-left p-2'>Durée</th></tr></thead><tbody><tr class='border-b border-zinc-700'><td class='p-2'><code>_ga</code></td><td class='p-2'>Distinction des visiteurs (Google Analytics)</td><td class='p-2'>13 mois</td></tr><tr class='border-b border-zinc-700'><td class='p-2'><code>_gid</code></td><td class='p-2'>Distinction des visiteurs (Google Analytics)</td><td class='p-2'>24 heures</td></tr><tr class='border-b border-zinc-700'><td class='p-2'><code>_ga_*</code></td><td class='p-2'>Stockage de l'état de session (Google Analytics)</td><td class='p-2'>13 mois</td></tr></tbody></table><h3 class='mt-6'>Cookies Marketing</h3><p>Ces cookies sont utilisés pour afficher des publicités pertinentes et mesurer l'efficacité des campagnes.</p><table class='w-full border-collapse mt-4'><thead><tr class='border-b border-zinc-700'><th class='text-left p-2'>Cookie</th><th class='text-left p-2'>Finalité</th><th class='text-left p-2'>Durée</th></tr></thead><tbody><tr class='border-b border-zinc-700'><td class='p-2'><code>_fbp</code></td><td class='p-2'>Publicité ciblée (Facebook Pixel)</td><td class='p-2'>3 mois</td></tr><tr class='border-b border-zinc-700'><td class='p-2'><code>fr</code></td><td class='p-2'>Publicité ciblée (Facebook)</td><td class='p-2'>3 mois</td></tr></tbody></table>",
+          "order": 2
+        },
+        {
+          "id": "manage-cookies",
+          "heading": "Gestion des Cookies",
+          "content": "<p>Vous pouvez à tout moment modifier vos préférences de cookies en cliquant sur le bouton des paramètres de cookies situé en bas à gauche de chaque page.</p><p><strong>Important :</strong> Le refus de certains cookies peut affecter votre expérience de navigation et limiter l'accès à certaines fonctionnalités du site.</p>",
+          "order": 3
+        },
+        {
+          "id": "third-party-cookies",
+          "heading": "Cookies Tiers",
+          "content": "<p>Certains cookies sont déposés par des services tiers avec votre consentement :</p><ul><li><strong>Google Analytics :</strong> Analyse d'audience et statistiques de visite</li><li><strong>Facebook Pixel :</strong> Mesure de l'efficacité publicitaire et remarketing</li></ul><p>Ces services tiers ont leur propre politique de confidentialité que nous vous invitons à consulter.</p>",
+          "order": 4
+        },
+        {
+          "id": "disable-cookies",
+          "heading": "Désactivation des Cookies",
+          "content": "<p>Vous pouvez également désactiver les cookies directement depuis votre navigateur :</p><ul><li><a href='https://support.google.com/chrome/answer/95647' target='_blank' rel='noopener'>Google Chrome</a></li><li><a href='https://support.mozilla.org/fr/kb/activer-desactiver-cookies' target='_blank' rel='noopener'>Mozilla Firefox</a></li><li><a href='https://support.apple.com/fr-fr/guide/safari/sfri11471/mac' target='_blank' rel='noopener'>Safari</a></li><li><a href='https://support.microsoft.com/fr-fr/microsoft-edge/supprimer-les-cookies-dans-microsoft-edge-63947406-40ac-c3b8-57b9-2a946a29ae09' target='_blank' rel='noopener'>Microsoft Edge</a></li></ul>",
+          "order": 5
+        }
+      ]
+    },
+    {
+      "id": "legal-notice",
+      "title": "Mentions Légales",
+      "slug": "mentions-legales",
+      "lastUpdated": "2026-04-07",
+      "version": "1.0",
+      "active": true,
+      "sections": [
+        {
+          "id": "editor",
+          "heading": "Éditeur du Site",
+          "content": "<p><strong>Raison sociale :</strong> AK CHAUFFAGE<br><strong>Forme juridique :</strong> [À compléter - ex: SPRL, SRL, etc.]<br><strong>Siège social :</strong> [Adresse complète à compléter]<br><strong>Numéro d'entreprise :</strong> [À compléter - ex: BE 0123.456.789]<br><strong>Numéro de TVA :</strong> [À compléter - ex: BE0123456789]</p><p><strong>Contact :</strong><br>Téléphone : +32 470 12 34 56<br>E-mail : contact@ak-chauffage.be</p>",
+          "order": 1
+        },
+        {
+          "id": "director",
+          "heading": "Directeur de la Publication",
+          "content": "<p><strong>Nom :</strong> [À compléter]<br><strong>Fonction :</strong> Gérant</p>",
+          "order": 2
+        },
+        {
+          "id": "hosting",
+          "heading": "Hébergement",
+          "content": "<p>Ce site est hébergé par :<br><strong>Nom de l'hébergeur :</strong> [À compléter]<br><strong>Adresse :</strong> [À compléter]<br><strong>Téléphone :</strong> [À compléter]</p>",
+          "order": 3
+        },
+        {
+          "id": "intellectual-property",
+          "heading": "Propriété Intellectuelle",
+          "content": "<p>L'ensemble du contenu de ce site (textes, images, logos, vidéos, etc.) est la propriété exclusive de AK CHAUFFAGE ou de ses partenaires et est protégé par les lois belges et internationales relatives à la propriété intellectuelle.</p><p>Toute reproduction, représentation, modification, publication ou adaptation de tout ou partie des éléments du site, quel que soit le moyen ou le procédé utilisé, est interdite sans l'autorisation écrite préalable de AK CHAUFFAGE.</p>",
+          "order": 4
+        },
+        {
+          "id": "liability",
+          "heading": "Responsabilité",
+          "content": "<p>AK CHAUFFAGE s'efforce d'assurer au mieux l'exactitude et la mise à jour des informations diffusées sur ce site. Toutefois, AK CHAUFFAGE ne peut garantir l'exactitude, la précision ou l'exhaustivité des informations mises à disposition sur ce site.</p><p>En conséquence, AK CHAUFFAGE décline toute responsabilité :</p><ul><li>Pour toute imprécision, inexactitude ou omission portant sur des informations disponibles sur le site</li><li>Pour tous dommages résultant de l'utilisation du site ou de l'impossibilité de l'utiliser</li><li>Pour tous dommages résultant de l'utilisation d'un matériel informatique ou de la perte de données</li></ul>",
+          "order": 5
+        },
+        {
+          "id": "applicable-law",
+          "heading": "Droit Applicable",
+          "content": "<p>Les présentes mentions légales sont régies par le droit belge. En cas de litige et à défaut d'accord amiable, le litige sera porté devant les tribunaux belges compétents.</p>",
+          "order": 6
+        }
+      ]
+    },
+    {
+      "id": "terms-of-service",
+      "title": "Conditions Générales de Service",
+      "slug": "conditions-generales",
+      "lastUpdated": "2026-04-07",
+      "version": "1.0",
+      "active": true,
+      "sections": [
+        {
+          "id": "purpose",
+          "heading": "Objet",
+          "content": "<p>Les présentes conditions générales ont pour objet de définir les modalités et conditions dans lesquelles AK CHAUFFAGE fournit ses services de chauffage, climatisation et ventilation aux clients professionnels et particuliers.</p><p>Toute commande ou demande de prestation implique l'acceptation sans réserve des présentes conditions générales.</p>",
+          "order": 1
+        },
+        {
+          "id": "services",
+          "heading": "Services Proposés",
+          "content": "<p>AK CHAUFFAGE propose les services suivants :</p><ul><li>Installation de systèmes de chauffage (chaudières, pompes à chaleur, radiateurs)</li><li>Installation de systèmes de climatisation et ventilation</li><li>Entretien et maintenance des installations</li><li>Dépannage et réparations</li><li>Ramonage et nettoyage</li><li>Conseil et audit énergétique</li></ul>",
+          "order": 2
+        },
+        {
+          "id": "quotes-orders",
+          "heading": "Devis et Commandes",
+          "content": "<p><strong>Devis :</strong> Tout devis établi par AK CHAUFFAGE est gratuit et valable pendant 30 jours à compter de sa date d'émission. Au-delà de ce délai, les prix sont susceptibles d'être révisés.</p><p><strong>Commande :</strong> La commande ne devient définitive qu'après signature du devis par le client et versement de l'acompte éventuel. AK CHAUFFAGE se réserve le droit de refuser toute commande pour un motif légitime.</p>",
+          "order": 3
+        },
+        {
+          "id": "pricing-payment",
+          "heading": "Prix et Paiement",
+          "content": "<p><strong>Prix :</strong> Les prix sont indiqués en euros (EUR), toutes taxes comprises (TTC). Les prix incluent la TVA au taux en vigueur en Belgique.</p><p><strong>Modalités de paiement :</strong></p><ul><li>Acompte : 30% à la commande pour les travaux d'installation</li><li>Solde : à la fin des travaux ou selon l'échéancier convenu</li><li>Moyens de paiement acceptés : virement bancaire, carte bancaire, espèces (jusqu'à 3000€)</li><li>Délai de paiement : 30 jours à compter de la date de facturation</li></ul><p><strong>Retard de paiement :</strong> Tout retard de paiement entraînera de plein droit et sans mise en demeure préalable :</p><ul><li>L'exigibilité immédiate de toutes les sommes dues</li><li>L'application d'intérêts de retard au taux de 10% par an</li><li>Une indemnité forfaitaire de 15% du montant dû avec un minimum de 125€</li></ul>",
+          "order": 4
+        },
+        {
+          "id": "execution",
+          "heading": "Exécution des Prestations",
+          "content": "<p><strong>Délais :</strong> Les délais d'exécution indiqués sont donnés à titre indicatif. AK CHAUFFAGE s'engage à respecter au mieux les délais convenus, mais ne pourra être tenu responsable des retards dus à des causes indépendantes de sa volonté.</p><p><strong>Accès aux lieux :</strong> Le client s'engage à donner accès aux lieux d'intervention et à fournir les conditions nécessaires à la bonne exécution des travaux (électricité, eau, accès dégagé).</p><p><strong>Modifications :</strong> Toute modification demandée en cours d'exécution fera l'objet d'un devis complémentaire et pourra entraîner un report du délai d'exécution.</p>",
+          "order": 5
+        },
+        {
+          "id": "warranties",
+          "heading": "Garanties",
+          "content": "<p><strong>Garantie légale :</strong> Tous nos travaux sont couverts par la garantie légale de conformité et la garantie contre les vices cachés, conformément au Code civil belge.</p><p><strong>Garantie contractuelle :</strong></p><ul><li>Main d'œuvre : 1 an à compter de la réception des travaux</li><li>Matériel : selon les conditions du fabricant (généralement 2 à 5 ans)</li></ul><p>La garantie ne couvre pas :</p><ul><li>Les dommages résultant d'une utilisation anormale ou non conforme</li><li>L'usure normale des équipements</li><li>Les interventions effectuées par des tiers non agréés</li><li>Le défaut d'entretien régulier</li></ul>",
+          "order": 6
+        },
+        {
+          "id": "maintenance",
+          "heading": "Entretien",
+          "content": "<p>Pour les installations de chauffage, un contrat d'entretien annuel est vivement recommandé et peut être obligatoire selon la réglementation en vigueur.</p><p>L'entretien régulier permet :</p><ul><li>D'assurer le bon fonctionnement et la longévité de l'installation</li><li>De maintenir les garanties constructeur</li><li>De respecter les obligations légales</li><li>D'optimiser les performances énergétiques</li></ul>",
+          "order": 7
+        },
+        {
+          "id": "cancellation",
+          "heading": "Annulation et Rétractation",
+          "content": "<p><strong>Droit de rétractation (particuliers) :</strong> Conformément au Code de droit économique belge, les particuliers disposent d'un délai de 14 jours pour exercer leur droit de rétractation sans avoir à justifier de motifs ni à payer de pénalités.</p><p>Ce délai court à compter :</p><ul><li>De la signature du contrat pour les prestations de service</li><li>De la livraison pour les biens matériels</li></ul><p><strong>Exceptions :</strong> Le droit de rétractation ne s'applique pas aux interventions d'urgence ou aux travaux déjà commencés avec l'accord exprès du client.</p><p><strong>Annulation par le client :</strong> Toute annulation doit être notifiée par écrit. En cas d'annulation après le début des travaux, les prestations déjà réalisées seront facturées au prorata.</p>",
+          "order": 8
+        },
+        {
+          "id": "liability",
+          "heading": "Responsabilité",
+          "content": "<p>AK CHAUFFAGE est assuré en responsabilité civile professionnelle et décennale pour l'ensemble de ses activités.</p><p><strong>Assurance RC Professionnelle :</strong><br>Compagnie : [À compléter]<br>Numéro de police : [À compléter]</p><p>La responsabilité de AK CHAUFFAGE ne pourra être engagée qu'en cas de faute prouvée et sera limitée au montant des prestations facturées.</p>",
+          "order": 9
+        },
+        {
+          "id": "disputes",
+          "heading": "Litiges",
+          "content": "<p><strong>Règlement amiable :</strong> En cas de litige, les parties s'engagent à rechercher une solution amiable avant toute action judiciaire.</p><p><strong>Médiation :</strong> Pour les particuliers, vous pouvez recourir gratuitement au Service de Médiation pour le Consommateur :</p><ul><li>Adresse : Boulevard du Roi Albert II 8 - 1000 Bruxelles</li><li>Téléphone : 02 702 52 00</li><li>E-mail : contact@mediationconsommateur.be</li><li>Site web : www.mediationconsommateur.be</li></ul><p><strong>Juridiction compétente :</strong> À défaut d'accord amiable, le litige sera porté devant les tribunaux belges compétents selon les règles de droit commun.</p>",
+          "order": 10
+        },
+        {
+          "id": "general-provisions",
+          "heading": "Dispositions Générales",
+          "content": "<p><strong>Modification :</strong> AK CHAUFFAGE se réserve le droit de modifier les présentes conditions générales à tout moment. Les conditions applicables sont celles en vigueur à la date de la commande.</p><p><strong>Nullité :</strong> Si une ou plusieurs stipulations des présentes conditions sont tenues pour non valides ou déclarées comme telles en application d'une loi, d'un règlement ou à la suite d'une décision définitive d'une juridiction compétente, les autres stipulations garderont toute leur force et leur portée.</p><p><strong>Non-renonciation :</strong> Le fait pour AK CHAUFFAGE de ne pas se prévaloir à un moment donné de l'une quelconque des présentes conditions ne peut être interprété comme valant renonciation à se prévaloir ultérieurement de l'une quelconque desdites conditions.</p>",
+          "order": 11
+        }
+      ]
+    }
+  ]
+}

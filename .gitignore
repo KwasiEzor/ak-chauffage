@@ -25,7 +25,11 @@ dist-ssr
 
 # Server and data
 server/.env
-data/*.json
+# Allow content JSON files for deployment
+# data/*.json
 !data/.gitkeep
+!data/content.json
+!data/settings.json
+!data/legal.json
 uploads/*
 !uploads/.gitkeep

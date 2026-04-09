@@ -1,0 +1,372 @@
+{
+  "services": [
+    {
+      "id": 1,
+      "icon": "Flame",
+      "title": "Installation de Chaudière",
+      "description": "Installation professionnelle de chaudières gaz, fioul et électriques. Choix des meilleures marques avec accompagnement pour les aides énergie.",
+      "features": [
+        "Chaudière gaz à condensation",
+        "Chaudière fioul haute performance",
+        "Installation clé en main",
+        "Aides énergie incluses"
+      ],
+      "image": "/images/boiler-installation.jpg",
+      "active": true,
+      "order": 1
+    },
+    {
+      "id": 2,
+      "icon": "Droplets",
+      "title": "Pompe à Chaleur",
+      "description": "Solutions écologiques et économiques pour votre chauffage. Installation de pompes à chaleur air/eau et géothermiques.",
+      "features": [
+        "PAC air/eau",
+        "PAC géothermique",
+        "Éligible MaPrimeRénov",
+        "Économies d'énergie"
+      ],
+      "image": "/images/heat-pump.jpg",
+      "active": true,
+      "order": 2
+    },
+    {
+      "id": 3,
+      "icon": "Wrench",
+      "title": "Entretien & Maintenance",
+      "description": "Contrats d'entretien annuels pour garantir la performance et la longévité de votre installation. Obligation légale pour votre sécurité.",
+      "features": [
+        "Entretien annuel obligatoire",
+        "Contrat de maintenance",
+        "Réduction des pannes",
+        "Optimisation performance"
+      ],
+      "image": "/images/maintenance.jpg",
+      "active": true,
+      "order": 3
+    },
+    {
+      "id": 4,
+      "icon": "Clock",
+      "title": "Dépannage Urgent 24/7",
+      "description": "Service d'urgence disponible 24h/24 et 7j/7. Intervention rapide en moins de 2 heures pour tous types de pannes.",
+      "features": [
+        "Intervention < 2h",
+        "Disponible 24h/24",
+        "Diagnostic express",
+        "Réparation sur place"
+      ],
+      "image": "/images/repair-service.jpg",
+      "active": true,
+      "order": 4
+    },
+    {
+      "id": 5,
+      "icon": "Thermometer",
+      "title": "Radiateurs & Plancher",
+      "description": "Installation et remplacement de radiateurs modernes et systèmes de chauffage au sol pour un confort optimal.",
+      "features": [
+        "Radiateurs design",
+        "Chauffage au sol",
+        "Thermostats connectés",
+        "Régulation optimale"
+      ],
+      "image": "/images/radiator-system.jpg",
+      "active": true,
+      "order": 5
+    },
+    {
+      "id": 6,
+      "icon": "Home",
+      "title": "Rénovation Énergétique",
+      "description": "Accompagnement complet pour votre rénovation énergétique. Étude thermique, solutions adaptées et montage des dossiers d'aides.",
+      "features": [
+        "Audit énergétique",
+        "Solutions sur-mesure",
+        "MaPrimeRénov",
+        "Éco-PTZ"
+      ],
+      "image": "/images/happy-family.jpg",
+      "active": true,
+      "order": 6
+    }
+  ],
+  "faqs": [
+    {
+      "id": 1,
+      "question": "Quels sont les délais d'intervention pour un dépannage urgent ?",
+      "answer": "Pour les dépannages urgents, nous intervenons rapidement à Charleroi et ses environs. Notre service est disponible 7 jours sur 7, y compris les week-ends. En cas de panne de chauffage en plein hiver, nous priorisons les interventions pour votre confort et sécurité.",
+      "category": "Dépannage",
+      "active": true,
+      "order": 1
+    },
+    {
+      "id": 2,
+      "question": "Quel est le prix d'une installation de chaudière à gaz ?",
+      "answer": "Le prix d'une installation de chaudière à gaz varie selon plusieurs facteurs : type de chaudière (classique ou à condensation), puissance nécessaire, travaux annexes éventuels, etc. En moyenne, comptez entre 3 000€ et 8 000€ tout compris. Nous proposons des devis gratuits et personnalisés, et nous vous accompagnons pour obtenir les aides énergie (MaPrimeRénov, CEE, etc.).",
+      "category": "Installation",
+      "active": true,
+      "order": 2
+    },
+    {
+      "id": 3,
+      "question": "L'entretien annuel de chaudière est-il obligatoire ?",
+      "answer": "Oui, l'entretien annuel des chaudières à gaz ou fioul est obligatoire depuis la réglementation en vigueur. Cet entretien doit être réalisé par un professionnel qualifié et permet d'assurer votre sécurité, d'optimiser les performances de votre installation et de réduire votre consommation énergétique. Un justificatif d'entretien peut vous être demandé en cas de sinistre.",
+      "category": "Entretien",
+      "active": true,
+      "order": 3
+    },
+    {
+      "id": 4,
+      "question": "Comment savoir si je suis éligible aux aides énergie ?",
+      "answer": "L'éligibilité aux aides énergie dépend de plusieurs critères : localisation du logement, revenus du foyer, type de travaux envisagés, etc. En tant que professionnel certifié RGE QualiPac, nous réalisons un audit gratuit de votre situation et nous occupons de monter votre dossier d'aides (MaPrimeRénov, CEE, Éco-PTZ). Nous vous accompagnons de A à Z dans vos démarches.",
+      "category": "Aides",
+      "active": true,
+      "order": 4
+    },
+    {
+      "id": 5,
+      "question": "Quelle différence entre une chaudière classique et à condensation ?",
+      "answer": "Une chaudière à condensation récupère la chaleur contenue dans les gaz de combustion pour la réinjecter dans le circuit de chauffage. Cette technologie permet d'économiser jusqu'à 30% d'énergie par rapport à une chaudière classique. Elle est également plus écologique et vous permet de bénéficier des aides à la rénovation énergétique.",
+      "category": "Conseils",
+      "active": true,
+      "order": 5
+    },
+    {
+      "id": 6,
+      "question": "Proposez-vous des contrats d'entretien ?",
+      "answer": "Oui, nous proposons plusieurs formules de contrats d'entretien adaptés à vos besoins. Ces contrats incluent l'entretien annuel obligatoire, la vérification de sécurité, le dépannage prioritaire et des tarifs préférentiels sur les pièces et la main d'œuvre. Contactez-nous pour découvrir nos offres et choisir celle qui vous convient le mieux.",
+      "category": "Entretien",
+      "active": true,
+      "order": 6
+    },
+    {
+      "id": 7,
+      "question": "Quelles marques de chaudières installez-vous ?",
+      "answer": "Nous installons les meilleures marques du marché : Vaillant, Viessmann, Frisquet, Chaffoteaux, Saunier Duval, De Dietrich, et bien d'autres. Nous sélectionnons les modèles les plus performants et fiables, adaptés à votre logement et à votre budget. Nous vous conseillons personnellement pour faire le meilleur choix.",
+      "category": "Installation",
+      "active": true,
+      "order": 7
+    },
+    {
+      "id": 8,
+      "question": "Quelle est la durée de vie d'une chaudière ?",
+      "answer": "La durée de vie moyenne d'une chaudière est d'environ 15 à 20 ans, selon la qualité de l'installation, l'entretien régulier et l'utilisation. Un entretien annuel professionnel permet d'optimiser la performance de votre appareil et de prolonger sa durée de vie. Au-delà de 15 ans, il peut être intéressant d'envisager le remplacement pour bénéficier des dernières technologies et réaliser des économies d'énergie.",
+      "category": "Conseils",
+      "active": true,
+      "order": 8
+    }
+  ],
+  "testimonials": [
+    {
+      "id": 1,
+      "name": "Marie L.",
+      "location": "Charleroi",
+      "rating": 5,
+      "text": "Intervention ultra rapide après la panne de ma chaudière en plein hiver. Le technicien était professionnel, sympathique et a tout expliqué clairement. Ma nouvelle chaudière fonctionne parfaitement. Je recommande vivement !",
+      "service": "Remplacement chaudière gaz",
+      "avatar": "ML",
+      "active": true,
+      "order": 1
+    },
+    {
+      "id": 2,
+      "name": "Pierre D.",
+      "location": "Gilly",
+      "rating": 5,
+      "text": "Excellente expérience pour l'installation de notre pompe à chaleur. L'équipe a été très professionnelle du devis à l'installation. Ils ont même géré tout le dossier MaPrimeRénov. Résultat au top !",
+      "service": "Installation PAC air/eau",
+      "avatar": "PD",
+      "active": true,
+      "order": 2
+    },
+    {
+      "id": 3,
+      "name": "Sophie M.",
+      "location": "Marcinelle",
+      "rating": 5,
+      "text": "Contrat d'entretien annuel depuis 3 ans. Jamais déçue ! Ponctualité, professionnalisme et tarifs transparents. Mon ancienne chaudière tient toujours le coup grâce à leur entretien rigoureux.",
+      "service": "Contrat maintenance",
+      "avatar": "SM",
+      "active": true,
+      "order": 3
+    },
+    {
+      "id": 4,
+      "name": "Jean-Claude B.",
+      "location": "Gosselies",
+      "rating": 5,
+      "text": "Dépannage rapide un dimanche après-midi. Intervention efficace, problème résolu immédiatement. Service client au top, prix juste. Un grand merci !",
+      "service": "Dépannage urgent",
+      "avatar": "JB",
+      "active": true,
+      "order": 4
+    },
+    {
+      "id": 5,
+      "name": "Isabelle T.",
+      "location": "Montignies-sur-Sambre",
+      "rating": 5,
+      "text": "Rénovation complète du chauffage de notre maison. Conseils pertinents, devis détaillé, travail soigné et respect des délais. Équipe très agréable et à l'écoute. Merci AK CHAUFFAGE !",
+      "service": "Rénovation complète",
+      "avatar": "IT",
+      "active": true,
+      "order": 5
+    }
+  ],
+  "projects": [
+    {
+      "id": 1,
+      "title": "Installation Chaudière Gaz Condensation",
+      "location": "Charleroi",
+      "date": "Décembre 2024",
+      "description": "Remplacement complet d'une vieille chaudière par un modèle à haute efficacité énergétique. Réduction de 30% sur la facture énergétique.",
+      "image": "/images/project-1.jpg",
+      "category": "Installation",
+      "active": true,
+      "order": 1
+    },
+    {
+      "id": 2,
+      "title": "Pompe à Chaleur Air/Eau",
+      "location": "Gosselies",
+      "date": "Novembre 2024",
+      "description": "Installation d'une pompe à chaleur moderne pour une maison individuelle. Projet accompagné avec MaPrimeRénov.",
+      "image": "/images/project-2.jpg",
+      "category": "Pompe à Chaleur",
+      "active": true,
+      "order": 2
+    },
+    {
+      "id": 3,
+      "title": "Système de Chauffage Collectif",
+      "location": "Marcinelle",
+      "date": "Octobre 2024",
+      "description": "Modernisation complète du système de chauffage d'une copropriété de 50 logements. Optimisation et régulation intelligente.",
+      "image": "/images/project-3.jpg",
+      "category": "Commercial",
+      "active": true,
+      "order": 3
+    }
+  ],
+  "advantages": [
+    {
+      "id": 1,
+      "icon": "Clock",
+      "title": "Intervention Rapide",
+      "description": "Nous intervenons rapidement pour toutes vos urgences. Service disponible du lundi au dimanche.",
+      "stat": "< 2h",
+      "statLabel": "Temps d'intervention",
+      "active": true,
+      "order": 1
+    },
+    {
+      "id": 2,
+      "icon": "Shield",
+      "title": "Garantie Décennale",
+      "description": "Toutes nos installations sont couvertes par une garantie décennale. Travail soigné et durable garanti.",
+      "stat": "10 ans",
+      "statLabel": "Garantie installation",
+      "active": true,
+      "order": 2
+    },
+    {
+      "id": 3,
+      "icon": "Award",
+      "title": "Certifications Officielles",
+      "description": "Certifié RGE QualiPac, nous vous accompagnons pour obtenir toutes les aides énergie disponibles.",
+      "stat": "100%",
+      "statLabel": "Aides énergie obtenues",
+      "active": true,
+      "order": 3
+    },
+    {
+      "id": 4,
+      "icon": "Users",
+      "title": "Équipe d'Experts",
+      "description": "Nos techniciens sont formés aux dernières technologies et disposent de plus de 15 ans d'expérience.",
+      "stat": "15+",
+      "statLabel": "Années d'expérience",
+      "active": true,
+      "order": 4
+    }
+  ],
+  "certifications": [
+    "RGE QualiPac",
+    "Certification Gaz",
+    "Label Qualibat",
+    "ProfiPac",
+    "Certibat",
+    "MaPrimeRénov"
+  ],
+  "hero": {
+    "badge": "Disponible du lundi au dimanche",
+    "headline": "Expert Chauffagiste à Charleroi",
+    "subheadline": "Installation, entretien et dépannage de chaudières, pompes à chaleur et systèmes de chauffage. Intervention rapide, devis gratuit et travail garanti.",
+    "trustBadges": [
+      {
+        "icon": "Clock",
+        "text": "Ouvert 7j/7"
+      },
+      {
+        "icon": "Shield",
+        "text": "Garantie 10 ans"
+      },
+      {
+        "icon": "Award",
+        "text": "Certifié RGE"
+      }
+    ],
+    "quickBenefits": [
+      "Devis gratuit sous 24h",
+      "Intervention < 2h",
+      "Garantie décennale",
+      "Certifié QualiPac"
+    ],
+    "stats": [
+      {
+        "value": "15+",
+        "label": "Années d'expérience"
+      },
+      {
+        "value": "5000+",
+        "label": "Clients satisfaits"
+      },
+      {
+        "value": "24/7",
+        "label": "Service d'urgence"
+      },
+      {
+        "value": "100%",
+        "label": "Garantie satisfaction"
+      }
+    ],
+    "rating": {
+      "value": 4.9,
+      "platform": "Google"
+    }
+  },
+  "ctaBanner": {
+    "badge": "Service disponible 7j/7",
+    "headline": "Besoin d'un chauffagiste en urgence ?",
+    "subheadline": "Nos techniciens interviennent rapidement pour tous types de pannes. Disponible 7 jours sur 7 à Charleroi et ses environs.",
+    "stats": [
+      {
+        "value": "Rapide",
+        "label": "Intervention"
+      },
+      {
+        "value": "7j/7",
+        "label": "Disponibilité"
+      },
+      {
+        "value": "0€",
+        "label": "Devis gratuit"
+      },
+      {
+        "value": "100%",
+        "label": "Satisfaction"
+      }
+    ]
+  }
+}

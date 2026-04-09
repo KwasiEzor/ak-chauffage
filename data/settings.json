@@ -1,0 +1,143 @@
+{
+  "site": {
+    "name": "AK CHAUFFAGE",
+    "tagline": "Chauffagiste Expert",
+    "description": "Expert en installation, entretien et dépannage de systèmes de chauffage. Plus de 15 ans d'expérience à votre service à Charleroi et ses environs.",
+    "keywords": "chauffagiste, charleroi, installation chaudière, pompe à chaleur, dépannage, entretien, belgique"
+  },
+  "contact": {
+    "phone": "+32 488 45 99 76",
+    "email": "contact@ak-chauffage.be",
+    "address": {
+      "street": "Bd Jacques Bertrand 33",
+      "postalCode": "6000",
+      "city": "Charleroi",
+      "country": "Belgique"
+    }
+  },
+  "hours": {
+    "weekdays": {
+      "label": "Lun - Sam",
+      "hours": "07:30-21:00"
+    },
+    "sunday": {
+      "label": "Dimanche",
+      "hours": "09:00-20:00"
+    },
+    "emergency": "24/7"
+  },
+  "serviceArea": {
+    "cities": [
+      "Charleroi",
+      "Gilly",
+      "Marcinelle",
+      "Montignies-sur-Sambre",
+      "Jumet",
+      "Gosselies",
+      "Lodelinsart",
+      "Dampremy",
+      "Roux"
+    ],
+    "description": "Et toute la région de Charleroi"
+  },
+  "social": {
+    "facebook": "#",
+    "instagram": "#",
+    "linkedin": "#"
+  },
+  "whatsapp": {
+    "enabled": false,
+    "phoneNumber": "+32488459976",
+    "defaultMessage": "Bonjour! Je souhaite obtenir un devis pour mes besoins en chauffage."
+  },
+  "legal": {
+    "companyName": "AK CHAUFFAGE",
+    "registrationNumber": "",
+    "vatNumber": "",
+    "links": [
+      {
+        "label": "Mentions légales",
+        "href": "/legal/mentions-legales"
+      },
+      {
+        "label": "Politique de confidentialité",
+        "href": "/legal/politique-confidentialite"
+      },
+      {
+        "label": "Politique des cookies",
+        "href": "/legal/politique-cookies"
+      },
+      {
+        "label": "Conditions générales",
+        "href": "/legal/conditions-generales"
+      }
+    ],
+    "gdpr": {
+      "policyVersion": "1.0",
+      "cookieBannerEnabled": true,
+      "defaultConsent": {
+        "analytics": false,
+        "marketing": false
+      },
+      "consentExpiryDays": 365
+    }
+  },
+  "navigation": [
+    {
+      "label": "Services",
+      "href": "#services"
+    },
+    {
+      "label": "Pourquoi Nous",
+      "href": "#avantages"
+    },
+    {
+      "label": "Réalisations",
+      "href": "#realisations"
+    },
+    {
+      "label": "Avis Clients",
+      "href": "#avis"
+    },
+    {
+      "label": "Contact",
+      "href": "#contact"
+    }
+  ],
+  "services": [
+    {
+      "label": "Installation chaudière",
+      "href": "#services"
+    },
+    {
+      "label": "Pompe à chaleur",
+      "href": "#services"
+    },
+    {
+      "label": "Dépannage urgent",
+      "href": "#services"
+    },
+    {
+      "label": "Entretien annuel",
+      "href": "#services"
+    },
+    {
+      "label": "Rénovation énergétique",
+      "href": "#services"
+    }
+  ],
+  "ratings": {
+    "google": {
+      "value": 4.9,
+      "max": 5
+    },
+    "pagesJaunes": {
+      "value": 5,
+      "max": 5
+    },
+    "trustpilot": {
+      "value": 4.8,
+      "max": 5
+    }
+  }
+}
