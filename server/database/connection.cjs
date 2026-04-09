@@ -47,13 +47,16 @@ if (DB_TYPE === 'postgres') {
       const pgSql = sql.replace(/\?/g, () => `$${++paramCount}`);
 
       return {
-        get(params = []) {
+        get(...args) {
+          const params = Array.isArray(args[0]) ? args[0] : args;
           return pool.query(pgSql, params).then(res => res.rows[0] || null);
         },
-        all(params = []) {
+        all(...args) {
+          const params = Array.isArray(args[0]) ? args[0] : args;
           return pool.query(pgSql, params).then(res => res.rows);
         },
-        run(params = []) {
+        run(...args) {
+          const params = Array.isArray(args[0]) ? args[0] : args;
           return pool.query(pgSql, params).then(res => ({
             changes: res.rowCount,
             lastInsertRowid: res.rows[0]?.id || null
