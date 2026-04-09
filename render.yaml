@@ -5,7 +5,7 @@ services:
     runtime: node
     plan: free
     region: frankfurt  # Closest to Belgium
-    buildCommand: npm install && npm run build
+    buildCommand: npm install --include=dev && npm run build
     startCommand: npm run start:prod
     envVars:
       - key: NODE_ENV
