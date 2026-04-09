@@ -147,8 +147,8 @@ if (process.env.NODE_ENV === 'production') {
     immutable: true,
   }));
 
-  // Catch-all route - send React app for client-side routing
-  app.get('*', (req, res) => {
+  // Catch-all route - send React app for client-side routing (Express 5.x compatible)
+  app.get('/*', (req, res) => {
     res.sendFile(path.join(distPath, 'index.html'));
   });
 }
