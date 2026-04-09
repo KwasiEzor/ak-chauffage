@@ -6,7 +6,7 @@ class AdminService {
    * Get admin by username
    */
   static async getByUsername(username) {
-    return await db.prepare('SELECT * FROM admins WHERE username = ? AND active = 1').get(username);
+    return await db.prepare('SELECT * FROM admins WHERE username = ? AND active = true').get(username);
   }
 
   /**
@@ -130,7 +130,7 @@ class AdminService {
   static async deactivate(id) {
     const stmt = db.prepare(`
       UPDATE admins
-      SET active = 0, updated_at = CURRENT_TIMESTAMP
+      SET active = false, updated_at = CURRENT_TIMESTAMP
       WHERE id = ?
     `);
 
@@ -145,7 +145,7 @@ class AdminService {
   static async reactivate(id) {
     const stmt = db.prepare(`
       UPDATE admins
-      SET active = 1, updated_at = CURRENT_TIMESTAMP
+      SET active = true, updated_at = CURRENT_TIMESTAMP
       WHERE id = ?
     `);
 
