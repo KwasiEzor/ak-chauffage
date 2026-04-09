@@ -21,7 +21,9 @@ if (DB_TYPE === 'postgres') {
     } : false,
     max: 20,
     idleTimeoutMillis: 30000,
-    connectionTimeoutMillis: 2000,
+    connectionTimeoutMillis: 10000, // Increased for Render free tier
+    statement_timeout: 30000, // 30 second query timeout
+    query_timeout: 30000,
   });
 
   // Test connection
