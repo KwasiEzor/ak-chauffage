@@ -3,6 +3,7 @@ const InvoiceService = require('../database/invoiceService.cjs');
 const authMiddleware = require('../middleware/auth.cjs');
 const { sendInvoiceEmail } = require('../utils/mailer.cjs');
 const { generateInvoicePDF } = require('../utils/invoicePdfGenerator.cjs');
+const ERRORS = require('../utils/errors.cjs');
 
 const router = express.Router();
 
@@ -27,7 +28,7 @@ router.get('/', async (req, res) => {
     res.json(result);
   } catch (error) {
     console.error('Error fetching invoices:', error);
-    res.status(500).json({ error: 'Failed to fetch invoices' });
+    res.status(500).json({ error: ERRORS.GENERAL.INTERNAL_ERROR });
   }
 });
 
@@ -41,7 +42,7 @@ router.get('/stats', async (req, res) => {
     res.json(stats);
   } catch (error) {
     console.error('Error fetching invoice stats:', error);
-    res.status(500).json({ error: 'Failed to fetch statistics' });
+    res.status(500).json({ error: ERRORS.GENERAL.INTERNAL_ERROR });
   }
 });
 
@@ -54,13 +55,13 @@ router.get('/:id', async (req, res) => {
     const invoice = await InvoiceService.getById(req.params.id);
 
     if (!invoice) {
-      return res.status(404).json({ error: 'Invoice not found' });
+      return res.status(404).json({ error: ERRORS.INVOICE.NOT_FOUND });
     }
 
     res.json(invoice);
   } catch (error) {
     console.error('Error fetching invoice:', error);
-    res.status(500).json({ error: 'Failed to fetch invoice' });
+    res.status(500).json({ error: ERRORS.GENERAL.INTERNAL_ERROR });
   }
 });
 
@@ -74,11 +75,11 @@ router.post('/', async (req, res) => {
 
     // Validation
     if (!invoice || !lineItems || lineItems.length === 0) {
-      return res.status(400).json({ error: 'Invoice and line items are required' });
+      return res.status(400).json({ error: ERRORS.INVOICE.FIELDS_REQUIRED });
     }
 
     if (!invoice.client_name || !invoice.client_email || !invoice.issue_date) {
-      return res.status(400).json({ error: 'Client name, email, and issue date are required' });
+      return res.status(400).json({ error: ERRORS.INVOICE.CLIENT_REQUIRED });
     }
 
     // Create invoice with current admin user
@@ -91,7 +92,7 @@ router.post('/', async (req, res) => {
     res.status(201).json(createdInvoice);
   } catch (error) {
     console.error('Error creating invoice:', error);
-    res.status(500).json({ error: 'Failed to create invoice' });
+    res.status(500).json({ error: ERRORS.INVOICE.CREATE_FAILED });
   }
 });
 
@@ -106,19 +107,19 @@ router.patch('/:id/status', async (req, res) => {
     // Validate status
     const validStatuses = ['draft', 'sent', 'paid', 'cancelled'];
     if (!status || !validStatuses.includes(status)) {
-      return res.status(400).json({ error: 'Invalid status' });
+      return res.status(400).json({ error: ERRORS.CONTACT.INVALID_STATUS });
     }
 
     const invoice = await InvoiceService.updateStatus(req.params.id, status, paidDate);
 
     if (!invoice) {
-      return res.status(404).json({ error: 'Invoice not found' });
+      return res.status(404).json({ error: ERRORS.INVOICE.NOT_FOUND });
     }
 
     res.json(invoice);
   } catch (error) {
     console.error('Error updating invoice status:', error);
-    res.status(500).json({ error: 'Failed to update invoice status' });
+    res.status(500).json({ error: ERRORS.INVOICE.UPDATE_FAILED });
   }
 });
 
@@ -132,12 +133,12 @@ router.post('/:id/send', async (req, res) => {
     const invoice = await InvoiceService.getById(req.params.id);
 
     if (!invoice) {
-      return res.status(404).json({ error: 'Invoice not found' });
+      return res.status(404).json({ error: ERRORS.INVOICE.NOT_FOUND });
     }
 
     // Validate client email
     if (!invoice.client_email) {
-      return res.status(400).json({ error: 'Invoice has no client email address' });
+      return res.status(400).json({ error: ERRORS.INVOICE.NO_EMAIL });
     }
 
     // Generate PDF
@@ -165,7 +166,7 @@ router.post('/:id/send', async (req, res) => {
   } catch (error) {
     console.error('Error sending invoice:', error);
     res.status(500).json({
-      error: 'Failed to send invoice',
+      error: ERRORS.INVOICE.SEND_FAILED,
       details: error.message
     });
   }
@@ -180,13 +181,13 @@ router.delete('/:id', async (req, res) => {
     const success = await InvoiceService.delete(req.params.id);
 
     if (!success) {
-      return res.status(404).json({ error: 'Invoice not found' });
+      return res.status(404).json({ error: ERRORS.INVOICE.NOT_FOUND });
     }
 
     res.json({ success: true, message: 'Invoice deleted' });
   } catch (error) {
     console.error('Error deleting invoice:', error);
-    res.status(500).json({ error: 'Failed to delete invoice' });
+    res.status(500).json({ error: ERRORS.INVOICE.DELETE_FAILED });
   }
 });
 

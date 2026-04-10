@@ -1,4 +1,5 @@
 const { db, getDateInterval, getDateTruncMonth } = require('./connection.cjs');
+const { sanitizeHTML, stripHTML } = require('../utils/sanitizer.cjs');
 
 /**
  * Contact Service
@@ -10,20 +11,27 @@ class ContactService {
    * Create a new contact
    */
   static async create({ name, email, phone, service, message, ipAddress, userAgent }) {
+    // Sanitize user inputs
+    const sName = stripHTML(name);
+    const sEmail = stripHTML(email);
+    const sPhone = stripHTML(phone);
+    const sService = stripHTML(service);
+    const sMessage = sanitizeHTML(message);
+
     const stmt = db.prepare(`
       INSERT INTO contacts (name, email, phone, service, message, ip_address, user_agent)
       VALUES (?, ?, ?, ?, ?, ?, ?)
     `);
 
-    const result = await stmt.run(name, email, phone, service, message, ipAddress, userAgent);
+    const result = await stmt.run(sName, sEmail, sPhone, sService, sMessage, ipAddress, userAgent);
 
     return {
       id: result.lastInsertRowid,
-      name,
-      email,
-      phone,
-      service,
-      message,
+      name: sName,
+      email: sEmail,
+      phone: sPhone,
+      service: sService,
+      message: sMessage,
       status: 'pending',
       created_at: new Date().toISOString(),
     };
@@ -107,18 +115,16 @@ class ContactService {
 
     if (notes !== undefined) {
       updates.push('notes = ?');
-      params.push(notes);
+      params.push(sanitizeHTML(notes));
     }
 
     if (updates.length === 0) {
       return await this.getById(id);
     }
 
-    updates.push('updated_at = CURRENT_TIMESTAMP');
-
-    const query = `UPDATE contacts SET ${updates.join(', ')} WHERE id = ?`;
     params.push(id);
-
+    const query = `UPDATE contacts SET ${updates.join(', ')}, updated_at = CURRENT_TIMESTAMP WHERE id = ?`;
+    
     const stmt = db.prepare(query);
     await stmt.run(...params);
 
@@ -146,23 +152,20 @@ class ContactService {
       today: 0,
       thisWeek: 0,
       thisMonth: 0,
+      popularServices: [],
     };
 
-    // Total counts by status
-    const statusStmt = db.prepare(`
-      SELECT status, COUNT(*) as count
-      FROM contacts
-      GROUP BY status
-    `);
-
-    const statusCounts = await statusStmt.all();
-    statusCounts.forEach(({ status, count }) => {
+    // Total and by status
+    const statusStmt = db.prepare('SELECT status, COUNT(*) as count FROM contacts GROUP BY status');
+    const statusResults = await statusStmt.all();
+    
+    statusResults.forEach(({ status, count }) => {
       stats[status] = count;
       stats.total += count;
     });
 
-    // Today's contacts
     const dateCast = db.type === 'postgres' ? 'created_at::date' : 'DATE(created_at)';
+    // Today's contacts
     const todayStmt = db.prepare(`
       SELECT COUNT(*) as count
       FROM contacts

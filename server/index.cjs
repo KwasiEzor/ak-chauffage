@@ -7,6 +7,7 @@ const rateLimit = require('express-rate-limit');
 const cookieParser = require('cookie-parser');
 const compression = require('compression');
 const { ensureDataDir } = require('./utils/fileManager.cjs');
+const { RATE_LIMIT } = require('./config/constants.cjs');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -72,8 +73,8 @@ if (process.env.NODE_ENV === 'production') {
 
 // Rate limiting - General API
 const apiLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // Limit each IP to 100 requests per window
+  windowMs: RATE_LIMIT.WINDOW_MS,
+  max: RATE_LIMIT.MAX_REQUESTS,
   message: 'Trop de requêtes, veuillez réessayer plus tard.',
   standardHeaders: true,
   legacyHeaders: false,
@@ -81,16 +82,16 @@ const apiLimiter = rateLimit({
 
 // Rate limiting - Login (prevent brute force)
 const loginLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 5, // 5 login attempts per 15 minutes
+  windowMs: RATE_LIMIT.WINDOW_MS,
+  max: RATE_LIMIT.LOGIN_MAX_ATTEMPTS,
   message: 'Trop de tentatives de connexion. Veuillez réessayer dans 15 minutes.',
   skipSuccessfulRequests: true, // Don't count successful logins
 });
 
 // Rate limiting - Contact form
 const contactLimiter = rateLimit({
-  windowMs: 60 * 60 * 1000, // 1 hour
-  max: 10, // Increased to 10 submissions per hour (allows retries)
+  windowMs: RATE_LIMIT.CONTACT_WINDOW_MS,
+  max: RATE_LIMIT.CONTACT_MAX_ATTEMPTS,
   message: 'Trop de soumissions. Veuillez réessayer dans une heure.',
   skipSuccessfulRequests: false,
 });

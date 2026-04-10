@@ -108,7 +108,7 @@ class AuditLogService {
   /**
    * Delete old audit logs (cleanup)
    */
-  static async cleanup(daysToKeep = 90) {
+  static async cleanup(daysToKeep = DATABASE.LOG_RETENTION_DAYS) {
     const stmt = db.prepare(`
       DELETE FROM audit_logs
       WHERE created_at < ${getDateInterval(daysToKeep)}
@@ -154,3 +154,4 @@ class AuditLogService {
 }
 
 module.exports = AuditLogService;
+dule.exports = AuditLogService;

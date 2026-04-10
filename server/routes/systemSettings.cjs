@@ -3,6 +3,8 @@ const authMiddleware = require('../middleware/auth.cjs');
 const SystemSettingsService = require('../database/systemSettingsService.cjs');
 const AuditLogService = require('../database/auditLogService.cjs');
 const nodemailer = require('nodemailer');
+const ERRORS = require('../utils/errors.cjs');
+const { settingsCache } = require('../utils/cache.cjs');
 
 const router = express.Router();
 
@@ -12,7 +14,15 @@ const router = express.Router();
  */
 router.get('/smtp', authMiddleware, (req, res) => {
   try {
-    const config = SystemSettingsService.getSMTPConfig();
+    const cached = settingsCache.get('smtp');
+    let config;
+    
+    if (cached) {
+      config = cached;
+    } else {
+      config = SystemSettingsService.getSMTPConfig();
+      settingsCache.set('smtp', config);
+    }
 
     // Don't send password to frontend (security)
     const { pass, ...safeConfig } = config;
@@ -23,7 +33,7 @@ router.get('/smtp', authMiddleware, (req, res) => {
     });
   } catch (error) {
     console.error('Error fetching SMTP config:', error);
-    res.status(500).json({ error: 'Failed to fetch SMTP configuration' });
+    res.status(500).json({ error: ERRORS.SYSTEM.LOAD_SETTINGS_FAILED });
   }
 });
 
@@ -37,14 +47,17 @@ router.put('/smtp', authMiddleware, async (req, res) => {
 
     // Validation
     if (!host || !port || !user) {
-      return res.status(400).json({ error: 'Host, port, and user are required' });
+      return res.status(400).json({ error: ERRORS.SYSTEM.SMTP_CONFIG_REQUIRED });
     }
 
     // Update settings
-    const config = SystemSettingsService.updateSMTPConfig(
+    const config = await SystemSettingsService.updateSMTPConfig(
       { host, port, user, pass: pass || '', from },
       req.user.id
     );
+
+    // Invalidate cache
+    settingsCache.flush();
 
     // Log the change
     await AuditLogService.log({
@@ -69,7 +82,7 @@ router.put('/smtp', authMiddleware, async (req, res) => {
     });
   } catch (error) {
     console.error('Error updating SMTP config:', error);
-    res.status(500).json({ error: 'Failed to update SMTP configuration' });
+    res.status(500).json({ error: ERRORS.SYSTEM.UPDATE_SETTINGS_FAILED });
   }
 });
 
@@ -82,7 +95,7 @@ router.post('/smtp/test', authMiddleware, async (req, res) => {
     const { host, port, user, pass } = req.body;
 
     if (!host || !port || !user) {
-      return res.status(400).json({ error: 'Host, port, and user are required for testing' });
+      return res.status(400).json({ error: ERRORS.SYSTEM.SMTP_CONFIG_REQUIRED });
     }
 
     // Create test transporter
@@ -143,7 +156,7 @@ router.post('/smtp/test', authMiddleware, async (req, res) => {
 
     res.status(400).json({
       success: false,
-      error: error.message || 'SMTP connection failed',
+      error: error.message || ERRORS.SYSTEM.SMTP_TEST_FAILED,
     });
   }
 });
@@ -152,19 +165,19 @@ router.post('/smtp/test', authMiddleware, async (req, res) => {
  * GET /api/system-settings/all
  * Get all system settings (super_admin only)
  */
-router.get('/all', authMiddleware, (req, res) => {
+router.get('/all', authMiddleware, async (req, res) => {
   try {
     // Check if super admin
     if (req.user.role !== 'super_admin') {
-      return res.status(403).json({ error: 'Super admin access required' });
+      return res.status(403).json({ error: ERRORS.AUTH.FORBIDDEN });
     }
 
-    const settings = SystemSettingsService.getAll();
+    const settings = await SystemSettingsService.getAll();
 
     res.json(settings);
   } catch (error) {
     console.error('Error fetching all settings:', error);
-    res.status(500).json({ error: 'Failed to fetch settings' });
+    res.status(500).json({ error: ERRORS.SYSTEM.LOAD_SETTINGS_FAILED });
   }
 });
 

@@ -1,6 +1,7 @@
 const express = require('express');
 const ContactService = require('../database/contactService.cjs');
 const authMiddleware = require('../middleware/auth.cjs');
+const ERRORS = require('../utils/errors.cjs');
 
 const router = express.Router();
 
@@ -22,7 +23,7 @@ router.get('/', authMiddleware, async (req, res) => {
     res.json(result);
   } catch (error) {
     console.error('Error fetching contacts:', error);
-    res.status(500).json({ error: 'Failed to fetch contacts' });
+    res.status(500).json({ error: ERRORS.CONTACT.FETCH_FAILED });
   }
 });
 
@@ -36,7 +37,7 @@ router.get('/stats', authMiddleware, async (req, res) => {
     res.json(stats);
   } catch (error) {
     console.error('Error fetching stats:', error);
-    res.status(500).json({ error: 'Failed to fetch statistics' });
+    res.status(500).json({ error: ERRORS.GENERAL.INTERNAL_ERROR });
   }
 });
 
@@ -56,7 +57,7 @@ router.get('/export', authMiddleware, async (req, res) => {
     res.send(csv);
   } catch (error) {
     console.error('Error exporting contacts:', error);
-    res.status(500).json({ error: 'Failed to export contacts' });
+    res.status(500).json({ error: ERRORS.GENERAL.INTERNAL_ERROR });
   }
 });
 
@@ -69,13 +70,13 @@ router.get('/:id', authMiddleware, async (req, res) => {
     const contact = await ContactService.getById(req.params.id);
 
     if (!contact) {
-      return res.status(404).json({ error: 'Contact not found' });
+      return res.status(404).json({ error: ERRORS.CONTACT.NOT_FOUND });
     }
 
     res.json(contact);
   } catch (error) {
     console.error('Error fetching contact:', error);
-    res.status(500).json({ error: 'Failed to fetch contact' });
+    res.status(500).json({ error: ERRORS.GENERAL.INTERNAL_ERROR });
   }
 });
 
@@ -90,19 +91,19 @@ router.put('/:id', authMiddleware, async (req, res) => {
     // Validate status
     const validStatuses = ['pending', 'contacted', 'completed', 'archived'];
     if (status && !validStatuses.includes(status)) {
-      return res.status(400).json({ error: 'Invalid status' });
+      return res.status(400).json({ error: ERRORS.CONTACT.INVALID_STATUS });
     }
 
     const contact = await ContactService.update(req.params.id, { status, notes });
 
     if (!contact) {
-      return res.status(404).json({ error: 'Contact not found' });
+      return res.status(404).json({ error: ERRORS.CONTACT.NOT_FOUND });
     }
 
     res.json(contact);
   } catch (error) {
     console.error('Error updating contact:', error);
-    res.status(500).json({ error: 'Failed to update contact' });
+    res.status(500).json({ error: ERRORS.GENERAL.INTERNAL_ERROR });
   }
 });
 
@@ -115,13 +116,13 @@ router.delete('/:id', authMiddleware, async (req, res) => {
     const success = await ContactService.delete(req.params.id);
 
     if (!success) {
-      return res.status(404).json({ error: 'Contact not found' });
+      return res.status(404).json({ error: ERRORS.CONTACT.NOT_FOUND });
     }
 
     res.json({ success: true });
   } catch (error) {
     console.error('Error deleting contact:', error);
-    res.status(500).json({ error: 'Failed to delete contact' });
+    res.status(500).json({ error: ERRORS.GENERAL.INTERNAL_ERROR });
   }
 });
 

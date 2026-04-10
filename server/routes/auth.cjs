@@ -4,6 +4,9 @@ const jwt = require('jsonwebtoken');
 const authMiddleware = require('../middleware/auth.cjs');
 const AdminService = require('../database/adminService.cjs');
 const AuditLogService = require('../database/auditLogService.cjs');
+const { AUTH, RATE_LIMIT } = require('../config/constants.cjs');
+const ERRORS = require('../utils/errors.cjs');
+
 const router = express.Router();
 
 // Rate limiting storage (simple in-memory for development)
@@ -17,7 +20,7 @@ setInterval(() => {
       loginAttempts.delete(ip);
     }
   }
-}, 15 * 60 * 1000);
+}, RATE_LIMIT.WINDOW_MS);
 
 /**
  * POST /api/auth/login
@@ -28,15 +31,15 @@ router.post('/login', async (req, res) => {
     const { username, password } = req.body;
 
     if (!username || !password) {
-      return res.status(400).json({ error: 'Username and password required' });
+      return res.status(400).json({ error: ERRORS.AUTH.REQUIRED });
     }
 
     // Check rate limiting
     const ip = req.ip;
-    const attempts = loginAttempts.get(ip) || { count: 0, resetTime: Date.now() + 15 * 60 * 1000 };
+    const attempts = loginAttempts.get(ip) || { count: 0, resetTime: Date.now() + RATE_LIMIT.WINDOW_MS };
 
-    if (Date.now() < attempts.resetTime && attempts.count >= 5) {
-      return res.status(429).json({ error: 'Too many login attempts. Try again later.' });
+    if (Date.now() < attempts.resetTime && attempts.count >= RATE_LIMIT.LOGIN_MAX_ATTEMPTS) {
+      return res.status(429).json({ error: ERRORS.AUTH.TOO_MANY_ATTEMPTS });
     }
 
     // Try database authentication first
@@ -61,13 +64,13 @@ router.post('/login', async (req, res) => {
     if (!admin) {
       // Increment failed attempts
       if (Date.now() >= attempts.resetTime) {
-        loginAttempts.set(ip, { count: 1, resetTime: Date.now() + 15 * 60 * 1000 });
+        loginAttempts.set(ip, { count: 1, resetTime: Date.now() + RATE_LIMIT.WINDOW_MS });
       } else {
         attempts.count++;
         loginAttempts.set(ip, attempts);
       }
 
-      return res.status(401).json({ error: 'Invalid credentials' });
+      return res.status(401).json({ error: ERRORS.AUTH.INVALID_CREDENTIALS });
     }
 
     // Clear failed attempts on successful login
@@ -89,7 +92,7 @@ router.post('/login', async (req, res) => {
       }
     }
 
-    // Generate JWT token (expires in 8 hours)
+    // Generate JWT token
     const token = jwt.sign(
       {
         id: admin.id,
@@ -97,8 +100,8 @@ router.post('/login', async (req, res) => {
         role: admin.role,
         authSource
       },
-      process.env.JWT_SECRET,
-      { expiresIn: '8h' }
+      AUTH.JWT_SECRET,
+      { expiresIn: AUTH.JWT_EXPIRES_IN }
     );
 
     res.json({
@@ -107,28 +110,27 @@ router.post('/login', async (req, res) => {
       user: {
         id: admin.id,
         username: admin.username,
-        email: admin.email,
         role: admin.role,
         authSource
       }
     });
   } catch (error) {
     console.error('Login error:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    res.status(500).json({ error: ERRORS.AUTH.INTERNAL_ERROR });
   }
 });
 
 /**
  * POST /api/auth/logout
- * Logout (client-side token removal)
+ * Dummy logout (client just discards token)
  */
-router.post('/logout', authMiddleware, (req, res) => {
+router.post('/logout', (req, res) => {
   res.json({ success: true });
 });
 
 /**
  * GET /api/auth/verify
- * Verify JWT token
+ * Verify token and return user data
  */
 router.get('/verify', authMiddleware, (req, res) => {
   res.json({
@@ -141,24 +143,23 @@ router.get('/verify', authMiddleware, (req, res) => {
  * GET /api/auth/profile
  * Get current admin profile
  */
-router.get('/profile', authMiddleware, (req, res) => {
+router.get('/profile', authMiddleware, async (req, res) => {
   try {
-    // If .env admin, return basic info
-    if (req.user.authSource === 'environment' || req.user.id === 0) {
+    // If it's the .env admin
+    if (req.user.authSource === 'environment') {
       return res.json({
         id: 0,
         username: req.user.username,
-        role: req.user.role,
+        role: 'super_admin',
         authSource: 'environment',
-        canChangePassword: false,
-        message: 'Using .env credentials. Create a database admin to enable profile management.'
+        canChangePassword: false
       });
     }
 
-    const admin = AdminService.getById(req.user.id);
+    const admin = await AdminService.getById(req.user.id);
 
     if (!admin) {
-      return res.status(404).json({ error: 'Admin not found' });
+      return res.status(404).json({ error: ERRORS.AUTH.ADMIN_NOT_FOUND });
     }
 
     res.json({
@@ -167,85 +168,79 @@ router.get('/profile', authMiddleware, (req, res) => {
       authSource: 'database'
     });
   } catch (error) {
-    console.error('Error fetching profile:', error);
-    res.status(500).json({ error: 'Failed to fetch profile' });
+    console.error('Profile error:', error);
+    res.status(500).json({ error: ERRORS.AUTH.INTERNAL_ERROR });
   }
 });
 
 /**
  * PUT /api/auth/password
- * Change password
+ * Change current admin password
  */
 router.put('/password', authMiddleware, async (req, res) => {
   try {
     const { currentPassword, newPassword, confirmPassword } = req.body;
 
-    // Validate inputs
     if (!currentPassword || !newPassword || !confirmPassword) {
-      return res.status(400).json({ error: 'All fields are required' });
+      return res.status(400).json({ error: ERRORS.AUTH.REQUIRED });
     }
 
     if (newPassword !== confirmPassword) {
-      return res.status(400).json({ error: 'New passwords do not match' });
+      return res.status(400).json({ error: ERRORS.AUTH.PASSWORDS_DONT_MATCH });
     }
 
-    // Password strength validation
     if (newPassword.length < 8) {
-      return res.status(400).json({ error: 'Password must be at least 8 characters long' });
+      return res.status(400).json({ error: ERRORS.AUTH.PASSWORD_TOO_SHORT });
     }
 
     // Check if .env admin
-    if (req.user.authSource === 'environment' || req.user.id === 0) {
+    if (req.user.authSource === 'environment') {
       return res.status(403).json({
-        error: 'Cannot change .env password via dashboard. Please edit .env file directly or create a database admin account.'
+        error: ERRORS.AUTH.ENV_PASS_CHANGE_RESTRICTED
       });
     }
 
-    // Update password
     await AdminService.updatePassword(req.user.id, currentPassword, newPassword);
 
     // Log password change
-    AuditLogService.log({
+    await AuditLogService.log({
       adminId: req.user.id,
       action: 'change_password',
       entityType: 'admin',
-      entityId: req.user.id.toString(),
+      entityId: req.user.id,
       ipAddress: req.ip,
       userAgent: req.headers['user-agent']
     });
 
-    res.json({
-      success: true,
-      message: 'Password updated successfully. Please login again.'
-    });
+    res.json({ success: true, message: 'Password updated successfully' });
   } catch (error) {
-    console.error('Error changing password:', error);
-    res.status(400).json({ error: error.message || 'Failed to change password' });
+    console.error('Password change error:', error);
+    res.status(400).json({ error: error.message });
   }
 });
 
 /**
  * PUT /api/auth/email
- * Update email address
+ * Update admin email
  */
 router.put('/email', authMiddleware, async (req, res) => {
   try {
     const { email } = req.body;
 
     if (!email) {
-      return res.status(400).json({ error: 'Email is required' });
+      return res.status(400).json({ error: ERRORS.AUTH.REQUIRED });
     }
 
-    // Basic email validation
+    // Email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
-      return res.status(400).json({ error: 'Invalid email format' });
+      return res.status(400).json({ error: ERRORS.CONTACT.INVALID_EMAIL });
     }
 
     // Check if .env admin
-    if (req.user.authSource === 'environment' || req.user.id === 0) {
+    if (req.user.authSource === 'environment') {
       return res.status(403).json({
-        error: 'Cannot update email for .env admin. Please create a database admin account.'
+        error: ERRORS.AUTH.ENV_EMAIL_CHANGE_RESTRICTED
       });
     }
 
@@ -256,19 +251,16 @@ router.put('/email', authMiddleware, async (req, res) => {
       adminId: req.user.id,
       action: 'update_email',
       entityType: 'admin',
-      entityId: req.user.id.toString(),
-      details: { newEmail: email },
+      entityId: req.user.id,
+      details: { email },
       ipAddress: req.ip,
       userAgent: req.headers['user-agent']
     });
 
-    res.json({
-      success: true,
-      admin: updated
-    });
+    res.json({ success: true, user: updated });
   } catch (error) {
-    console.error('Error updating email:', error);
-    res.status(400).json({ error: error.message || 'Failed to update email' });
+    console.error('Email update error:', error);
+    res.status(400).json({ error: error.message });
   }
 });
 

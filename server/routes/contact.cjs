@@ -1,6 +1,7 @@
 const express = require('express');
 const { sendContactEmail, sendAutoResponse } = require('../utils/mailer.cjs');
 const ContactService = require('../database/contactService.cjs');
+const ERRORS = require('../utils/errors.cjs');
 const router = express.Router();
 
 /**
@@ -13,20 +14,20 @@ router.post('/', async (req, res) => {
 
     // Server-side validation
     if (!name || !email || !phone || !service) {
-      return res.status(400).json({ error: 'Tous les champs obligatoires doivent être remplis' });
+      return res.status(400).json({ error: ERRORS.CONTACT.FIELDS_REQUIRED });
     }
 
     // Email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
-      return res.status(400).json({ error: 'Adresse email invalide' });
+      return res.status(400).json({ error: ERRORS.CONTACT.INVALID_EMAIL });
     }
 
     // Phone validation (Belgian format: +32 XXX XX XX XX or similar)
     const phoneRegex = /^(\+32|0032|0)[1-9]\d{7,8}$/;
     const cleanPhone = phone.replace(/\s/g, '');
     if (!phoneRegex.test(cleanPhone)) {
-      return res.status(400).json({ error: 'Numéro de téléphone invalide' });
+      return res.status(400).json({ error: ERRORS.CONTACT.INVALID_PHONE });
     }
 
     // Additional server-side honeypot check (if bot bypassed client-side)
@@ -64,7 +65,7 @@ router.post('/', async (req, res) => {
 
     // If both failed, return error
     if (!contact && !emailSent) {
-      return res.status(500).json({ error: 'Une erreur est survenue lors de l\'envoi de votre message. Veuillez réessayer.' });
+      return res.status(500).json({ error: ERRORS.CONTACT.SEND_FAILED });
     }
 
     // Send auto-response to customer (optional, don't wait for it)
@@ -89,7 +90,7 @@ router.post('/', async (req, res) => {
     });
   } catch (error) {
     console.error('Contact form error:', error);
-    res.status(500).json({ error: 'Une erreur est survenue. Veuillez réessayer.' });
+    res.status(500).json({ error: ERRORS.GENERAL.INTERNAL_ERROR });
   }
 });
 

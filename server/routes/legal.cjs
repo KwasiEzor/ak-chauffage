@@ -1,6 +1,8 @@
 const express = require('express');
 const authMiddleware = require('../middleware/auth.cjs');
 const { readJSON, writeJSON } = require('../utils/fileManager.cjs');
+const { sanitizeObject } = require('../utils/sanitizer.cjs');
+const ERRORS = require('../utils/errors.cjs');
 
 const router = express.Router();
 const LEGAL_FILE = 'legal.json';
@@ -14,7 +16,7 @@ router.get('/', async (req, res) => {
     const data = await readJSON(LEGAL_FILE);
 
     if (!data || !data.pages) {
-      return res.status(404).json({ error: 'Legal pages not found' });
+      return res.status(404).json({ error: ERRORS.LEGAL.NOT_FOUND });
     }
 
     // Filter to only return active pages
@@ -31,7 +33,7 @@ router.get('/', async (req, res) => {
     res.json(pageList);
   } catch (error) {
     console.error('Error reading legal pages:', error);
-    res.status(500).json({ error: 'Failed to load legal pages' });
+    res.status(500).json({ error: ERRORS.GENERAL.INTERNAL_ERROR });
   }
 });
 
@@ -45,20 +47,20 @@ router.get('/:slug', async (req, res) => {
     const data = await readJSON(LEGAL_FILE);
 
     if (!data || !data.pages) {
-      return res.status(404).json({ error: 'Legal pages not found' });
+      return res.status(404).json({ error: ERRORS.LEGAL.NOT_FOUND });
     }
 
     // Find the page by slug
     const page = data.pages.find(p => p.slug === slug && p.active);
 
     if (!page) {
-      return res.status(404).json({ error: 'Legal page not found' });
+      return res.status(404).json({ error: ERRORS.LEGAL.PAGE_NOT_FOUND });
     }
 
     res.json(page);
   } catch (error) {
     console.error('Error reading legal page:', error);
-    res.status(500).json({ error: 'Failed to load legal page' });
+    res.status(500).json({ error: ERRORS.GENERAL.INTERNAL_ERROR });
   }
 });
 
@@ -69,24 +71,24 @@ router.get('/:slug', async (req, res) => {
 router.put('/:id', authMiddleware, async (req, res) => {
   try {
     const { id } = req.params;
-    const updatedPage = req.body;
+    const updatedPage = sanitizeObject(req.body);
 
     // Basic validation
     if (!updatedPage || typeof updatedPage !== 'object') {
-      return res.status(400).json({ error: 'Invalid page data' });
+      return res.status(400).json({ error: ERRORS.LEGAL.INVALID_DATA });
     }
 
     const data = await readJSON(LEGAL_FILE);
 
     if (!data || !data.pages) {
-      return res.status(404).json({ error: 'Legal pages not found' });
+      return res.status(404).json({ error: ERRORS.LEGAL.NOT_FOUND });
     }
 
     // Find the index of the page to update
     const pageIndex = data.pages.findIndex(p => p.id === id);
 
     if (pageIndex === -1) {
-      return res.status(404).json({ error: 'Legal page not found' });
+      return res.status(404).json({ error: ERRORS.LEGAL.PAGE_NOT_FOUND });
     }
 
     // Update the page
@@ -106,7 +108,7 @@ router.put('/:id', authMiddleware, async (req, res) => {
     });
   } catch (error) {
     console.error('Error updating legal page:', error);
-    res.status(500).json({ error: 'Failed to update legal page' });
+    res.status(500).json({ error: ERRORS.LEGAL.UPDATE_FAILED });
   }
 });
 

@@ -1,146 +1,109 @@
 const express = require('express');
-const fs = require('fs').promises;
 const path = require('path');
+const fs = require('fs').promises;
+const { upload, getCloudinaryUrl, deleteFromCloudinary } = require('../middleware/upload.cjs');
 const authMiddleware = require('../middleware/auth.cjs');
-const upload = require('../middleware/upload.cjs');
-const cloudinaryService = require('../utils/cloudinaryService.cjs');
+const ERRORS = require('../utils/errors.cjs');
 
 const router = express.Router();
 const UPLOADS_DIR = path.join(__dirname, '../../uploads');
 
-// Check if using Cloudinary
-const USE_CLOUDINARY = cloudinaryService.isConfigured();
-
 /**
  * GET /api/media
- * List all uploaded images (protected)
+ * List all uploaded files
  */
 router.get('/', authMiddleware, async (req, res) => {
   try {
-    if (USE_CLOUDINARY) {
-      // For Cloudinary, return empty array (images are stored in content.json)
-      // This route is mainly for local file listing
-      return res.json([]);
-    }
-
+    // 1. Get local files
     const files = await fs.readdir(UPLOADS_DIR);
-    const imageFiles = files.filter(file => {
-      const ext = path.extname(file).toLowerCase();
-      return ['.jpg', '.jpeg', '.png', '.gif', '.webp'].includes(ext);
-    });
+    
+    // Filter out .gitkeep and other system files
+    const localMedia = files
+      .filter(file => !file.startsWith('.'))
+      .map(file => ({
+        filename: file,
+        url: `/uploads/${file}`,
+        type: 'local',
+        path: path.join(UPLOADS_DIR, file)
+      }));
 
-    const fileDetails = await Promise.all(
-      imageFiles.map(async (filename) => {
-        const filePath = path.join(UPLOADS_DIR, filename);
-        const stats = await fs.stat(filePath);
-        return {
-          filename,
-          url: `/uploads/${filename}`,
-          size: stats.size,
-          uploadedAt: stats.mtime,
-        };
-      })
-    );
-
-    res.json(fileDetails);
+    // In a real app with Cloudinary, you'd also list files from Cloudinary API here
+    // For now we just return local files + any hardcoded known assets
+    
+    res.json(localMedia);
   } catch (error) {
     console.error('Error listing media:', error);
-    res.status(500).json({ error: 'Failed to list media files' });
+    res.status(500).json({ error: ERRORS.MEDIA.LIST_FAILED });
   }
 });
 
 /**
  * POST /api/media/upload
- * Upload image (protected)
- * Uses Cloudinary if configured, falls back to local storage
+ * Upload a file (local or Cloudinary)
  */
 router.post('/upload', authMiddleware, upload.single('image'), async (req, res) => {
   try {
     if (!req.file) {
-      return res.status(400).json({ error: 'No file uploaded' });
+      return res.status(400).json({ error: ERRORS.MEDIA.NO_FILE });
     }
 
-    // Use Cloudinary if configured
-    if (USE_CLOUDINARY) {
-      try {
-        const result = await cloudinaryService.uploadImage(req.file.path, {
-          folder: 'ak-chauffage/media',
-          tags: ['media', req.body.tag || 'general']
-        });
+    // If Cloudinary was used, we get the URL from the middleware
+    const fileUrl = req.file.path.startsWith('http') 
+      ? req.file.path 
+      : `/uploads/${req.file.filename}`;
 
-        console.log('✅ Image uploaded to Cloudinary:', result.url);
-
-        return res.json({
-          success: true,
-          url: result.url,
-          publicId: result.publicId,
-          width: result.width,
-          height: result.height,
-          size: result.bytes,
-          storage: 'cloudinary'
-        });
-      } catch (cloudinaryError) {
-        console.error('Cloudinary upload failed, falling back to local:', cloudinaryError);
-        // Fall through to local storage
-      }
-    }
-
-    // Local storage fallback
     res.json({
       success: true,
-      filename: req.file.filename,
-      url: `/uploads/${req.file.filename}`,
-      size: req.file.size,
-      storage: 'local'
+      file: {
+        filename: req.file.filename,
+        url: fileUrl,
+        mimetype: req.file.mimetype,
+        size: req.file.size
+      }
     });
-
   } catch (error) {
-    console.error('Error uploading file:', error);
-    res.status(500).json({ error: 'Failed to upload file' });
+    console.error('Upload error:', error);
+    res.status(500).json({ error: ERRORS.MEDIA.UPLOAD_FAILED });
   }
 });
 
 /**
  * DELETE /api/media/:identifier
- * Delete uploaded image (protected)
- * Supports both Cloudinary public IDs and local filenames
+ * Delete a media file
  */
 router.delete('/:identifier', authMiddleware, async (req, res) => {
   try {
     const { identifier } = req.params;
 
-    // Security: prevent path traversal for local files
-    if (identifier.includes('..') || (identifier.includes('/') && !identifier.includes('ak-chauffage'))) {
-      return res.status(400).json({ error: 'Invalid identifier' });
+    if (!identifier) {
+      return res.status(400).json({ error: ERRORS.MEDIA.INVALID_ID });
     }
 
-    // Try Cloudinary first if it looks like a public ID
-    if (USE_CLOUDINARY && identifier.includes('ak-chauffage/')) {
+    // 1. Try deleting from Cloudinary if it looks like a Cloudinary ID
+    if (identifier.includes('/')) {
       try {
-        await cloudinaryService.deleteImage(identifier);
-        console.log('✅ Image deleted from Cloudinary:', identifier);
-        return res.json({ success: true, message: 'File deleted from Cloudinary' });
-      } catch (cloudinaryError) {
-        console.error('Cloudinary delete failed:', cloudinaryError);
-        // Fall through to try local
+        await deleteFromCloudinary(identifier);
+      } catch (err) {
+        console.warn('Cloudinary delete failed, might be local file:', err.message);
       }
     }
 
-    // Try local storage
+    // 2. Try deleting local file
     const filePath = path.join(UPLOADS_DIR, identifier);
-
     try {
       await fs.access(filePath);
       await fs.unlink(filePath);
-      console.log('✅ Image deleted from local storage:', identifier);
       return res.json({ success: true, message: 'File deleted successfully' });
-    } catch {
-      return res.status(404).json({ error: 'File not found' });
+    } catch (err) {
+      // If file doesn't exist locally and Cloudinary also failed/wasn't applicable
+      if (identifier.includes('/')) {
+        return res.json({ success: true, message: 'Cloudinary deletion attempted' });
+      }
+      return res.status(404).json({ error: ERRORS.MEDIA.NOT_FOUND });
     }
-
   } catch (error) {
-    console.error('Error deleting file:', error);
-    res.status(500).json({ error: 'Failed to delete file' });
+    console.error('Delete error:', error);
+    res.status(500).json({ error: ERRORS.MEDIA.DELETE_FAILED });
   }
 });
 

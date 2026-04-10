@@ -110,15 +110,15 @@ async function sendContactEmail(formData) {
   const { name, email, phone, service, message } = formData;
 
   const smtpConfig = SystemSettingsService.getSMTPConfig();
-  const contactEmail = process.env.CONTACT_EMAIL || smtpConfig.from || smtpConfig.user;
+  const contactEmail = EMAIL.CONTACT_RECIPIENT || smtpConfig.from || smtpConfig.user;
   
   // Use a fallback if still not found to prevent failure
-  const fromEmail = smtpConfig.from || smtpConfig.user || 'noreply@ak-chauffage.be';
+  const fromEmail = smtpConfig.from || smtpConfig.user || EMAIL.DEFAULT_FROM;
 
   // Email to business owner
   const mailOptions = {
     from: `"AK CHAUFFAGE Website" <${fromEmail}>`,
-    to: contactEmail || 'contact@ak-chauffage.be',
+    to: contactEmail,
     replyTo: email,
     subject: `🔥 Nouveau contact: ${service}`,
     html: `
@@ -446,4 +446,6 @@ module.exports = {
   sendAutoResponse,
   sendInvoiceEmail,
   verifyTransporter,
+};
+Transporter,
 };
