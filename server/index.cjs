@@ -61,8 +61,13 @@ app.use(helmet({
   referrerPolicy: { policy: 'strict-origin-when-cross-origin' }
 }));
 
-// HTTPS enforcement in production
-if (process.env.NODE_ENV === 'production') {
+// HTTPS enforcement in production. Allow local test harnesses to opt out
+// while keeping the production default strict.
+const enforceHttps =
+  process.env.NODE_ENV === 'production' &&
+  process.env.DISABLE_HTTPS_REDIRECT !== 'true';
+
+if (enforceHttps) {
   app.use((req, res, next) => {
     if (req.header('x-forwarded-proto') !== 'https') {
       return res.redirect(`https://${req.header('host')}${req.url}`);
@@ -100,8 +105,19 @@ const contactLimiter = rateLimit({
 app.use('/api/', apiLimiter);
 
 // CORS
+const allowedOrigins = (process.env.ALLOWED_ORIGINS || '')
+  .split(',')
+  .map(origin => origin.trim())
+  .filter(Boolean);
+
 app.use(cors({
-  origin: process.env.ALLOWED_ORIGINS?.split(',') || '*',
+  origin(origin, callback) {
+    if (!origin || allowedOrigins.length === 0 || allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+
+    return callback(new Error('Origin not allowed by CORS'));
+  },
   credentials: true,
 }));
 
@@ -145,6 +161,7 @@ app.use('/uploads', express.static(path.join(__dirname, '../uploads'), {
 }));
 
 // API Routes
+app.use('/api/auth/login', loginLimiter);
 app.use('/api/auth', require('./routes/auth.cjs'));
 app.use('/api/content', require('./routes/content.cjs'));
 app.use('/api/settings', require('./routes/settings.cjs'));
@@ -191,6 +208,9 @@ async function start() {
   try {
     // Ensure data directory exists
     await ensureDataDir();
+
+    // Initialize the base SQLite schema for fresh local environments.
+    require('./database/init.cjs');
 
     // Run database migrations
     console.log('📦 Running database migrations...');

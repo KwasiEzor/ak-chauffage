@@ -7,7 +7,7 @@ A modern, self-contained website with an integrated admin dashboard for managing
 - **Admin CMS Dashboard**: Full-featured admin panel to manage all website content
 - **Dynamic Content**: All content is stored in JSON files and loaded dynamically
 - **Professional Design**: Modern UI with Tailwind CSS and React 19
-- **Type-Safe**: Full TypeScript support with Zod validation
+- **Type-Safe Frontend**: TypeScript-powered React application
 - **Authentication**: JWT-based admin authentication with bcrypt password hashing
 - **Media Management**: Upload and manage images
 - **Real-time Updates**: Content changes reflect immediately on the public site
@@ -42,6 +42,13 @@ npm start
 ```
 
 Server runs on port 3000 (configurable via `PORT` env variable)
+
+## Runtime Data
+
+- `data/content.json`, `data/settings.json`, and `data/legal.json` are source-controlled content files.
+- `data/*.db`, `data/*.db-shm`, and `data/*.db-wal` are local runtime SQLite artifacts and should stay out of git.
+- Local development can use SQLite; production should use PostgreSQL via `DATABASE_URL`.
+- `uploads/` is runtime storage and should be backed by persistent disk or externalized to Cloudinary in production.
 
 ## 📁 Project Structure
 

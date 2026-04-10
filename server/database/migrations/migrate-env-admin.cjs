@@ -7,6 +7,7 @@ const { db } = require('../connection.cjs');
 async function migrateEnvAdmin() {
   const username = process.env.ADMIN_USERNAME;
   const passwordHash = process.env.ADMIN_PASSWORD_HASH;
+  const adminEmail = process.env.ADMIN_EMAIL || null;
 
   if (!username || !passwordHash) {
     console.log('⚠️  No admin credentials in .env, skipping migration');
@@ -22,13 +23,26 @@ async function migrateEnvAdmin() {
       return;
     }
 
-    // Insert admin from .env
-    const stmt = db.prepare(`
-      INSERT INTO admins (username, password_hash, role, email)
-      VALUES (?, ?, 'super_admin', ?)
-    `);
+    let result;
 
-    const result = await stmt.run(username, passwordHash, 'admin@ak-chauffage.be');
+    try {
+      const stmt = db.prepare(`
+        INSERT INTO admins (username, password_hash, role, email)
+        VALUES (?, ?, 'super_admin', ?)
+      `);
+
+      result = await stmt.run(username, passwordHash, adminEmail);
+    } catch (error) {
+      if (adminEmail && /email/i.test(error.message || '')) {
+        const fallbackStmt = db.prepare(`
+          INSERT INTO admins (username, password_hash, role, email)
+          VALUES (?, ?, 'super_admin', NULL)
+        `);
+        result = await fallbackStmt.run(username, passwordHash);
+      } else {
+        throw error;
+      }
+    }
 
     console.log('✅ Migrated admin from .env to database:', username);
     console.log('   Admin ID:', result.lastInsertRowid);

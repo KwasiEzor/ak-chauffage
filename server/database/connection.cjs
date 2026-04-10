@@ -36,15 +36,28 @@ if (DB_TYPE === 'postgres') {
     }
   });
 
+  const convertPlaceholders = (sql) => {
+    let paramCount = 0;
+    return sql.replace(/\?/g, () => `$${++paramCount}`);
+  };
+
+  const getRunSql = (sql) => {
+    const trimmedSql = sql.trim();
+    if (!/^insert\s+/i.test(trimmedSql) || /\breturning\b/i.test(trimmedSql)) {
+      return trimmedSql;
+    }
+
+    return `${trimmedSql} RETURNING id`;
+  };
+
   // PostgreSQL wrapper to match SQLite API
   db = {
     type: 'postgres',
     pool,
 
     prepare(sql) {
-      // Convert SQLite ? placeholders to PostgreSQL $1, $2, etc.
-      let paramCount = 0;
-      const pgSql = sql.replace(/\?/g, () => `$${++paramCount}`);
+      const pgSql = convertPlaceholders(sql);
+      const pgRunSql = getRunSql(pgSql);
 
       const queryObj = {
         get(...args) {
@@ -57,7 +70,7 @@ if (DB_TYPE === 'postgres') {
         },
         run(...args) {
           const params = Array.isArray(args[0]) ? args[0] : args;
-          return pool.query(pgSql, params).then(res => ({
+          return pool.query(pgRunSql, params).then(res => ({
             changes: res.rowCount,
             lastInsertRowid: res.rows[0]?.id || null
           }));
@@ -79,8 +92,8 @@ if (DB_TYPE === 'postgres') {
       await client.query('BEGIN');
       return {
         prepare(sql) {
-          let paramCount = 0;
-          const pgSql = sql.replace(/\?/g, () => `$${++paramCount}`);
+          const pgSql = convertPlaceholders(sql);
+          const pgRunSql = getRunSql(pgSql);
           return {
             get(...args) {
               const params = Array.isArray(args[0]) ? args[0] : args;
@@ -92,7 +105,7 @@ if (DB_TYPE === 'postgres') {
             },
             run(...args) {
               const params = Array.isArray(args[0]) ? args[0] : args;
-              return client.query(pgSql, params).then(res => ({
+              return client.query(pgRunSql, params).then(res => ({
                 changes: res.rowCount,
                 lastInsertRowid: res.rows[0]?.id || null
               }));

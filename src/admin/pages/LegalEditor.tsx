@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { adminApi, api } from '../../utils/api';
-import { Save, AlertCircle, CheckCircle2, Plus, X, ChevronDown, ChevronUp, FileText } from 'lucide-react';
+import { adminApi } from '../../utils/api';
+import { Save, AlertCircle, CheckCircle2, Plus, FileText } from 'lucide-react';
 import type { LegalPage } from '../../types/gdpr';
 
 export default function LegalEditor() {
@@ -18,21 +18,7 @@ export default function LegalEditor() {
   const fetchLegalPages = async () => {
     try {
       setLoading(true);
-      const response = await fetch('/api/legal');
-      const data = await response.json();
-
-      // Fetch full data for all pages
-      const fullDataResponse = await fetch(`${import.meta.env.PROD ? '/api' : 'http://localhost:3001/api'}/legal`);
-      const listData = await fullDataResponse.json();
-
-      // Get full page data by fetching each page
-      const fullPages = await Promise.all(
-        listData.map(async (pageInfo: any) => {
-          const pageResponse = await fetch(`${import.meta.env.PROD ? '/api' : 'http://localhost:3001/api'}/legal/${pageInfo.slug}`);
-          return pageResponse.json();
-        })
-      );
-
+      const fullPages = await adminApi.getAdminLegalPages();
       setPages(fullPages);
       if (fullPages.length > 0) {
         setSelectedPage(fullPages[0]);

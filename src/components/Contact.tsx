@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Phone, Mail, MapPin, Clock, Send, CheckCircle2, Loader2 } from 'lucide-react';
 import { useContent } from '../contexts/ContentContext';
 import ServiceAreaMap from './ServiceAreaMap';
+import api from '../utils/api';
 
 export default function Contact() {
   const sectionRef = useRef<HTMLElement>(null);
@@ -72,20 +73,13 @@ export default function Contact() {
 
     try {
       // Send to API (replace with real endpoint)
-      const response = await fetch('/api/contact', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: formData.name,
-          email: formData.email,
-          phone: formData.phone,
-          service: formData.service,
-          message: formData.message,
-          // Don't send honeypot field to server
-        }),
+      await api.submitContact({
+        name: formData.name,
+        email: formData.email,
+        phone: formData.phone,
+        service: formData.service,
+        message: formData.message,
       });
-
-      if (!response.ok) throw new Error('Submission failed');
 
       setIsSubmitted(true);
       setFormData({ name: '', email: '', phone: '', service: '', message: '', website: '' });

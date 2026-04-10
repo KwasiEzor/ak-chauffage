@@ -25,6 +25,9 @@ dist-ssr
 
 # Server and data
 server/.env
+data/*.db
+data/*.db-shm
+data/*.db-wal
 # Allow content JSON files for deployment
 # data/*.json
 !data/.gitkeep
@@ -33,3 +36,5 @@ server/.env
 !data/legal.json
 uploads/*
 !uploads/.gitkeep
+playwright-report/
+test-results/

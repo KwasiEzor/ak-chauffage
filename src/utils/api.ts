@@ -4,6 +4,10 @@ interface APIError {
   error: string;
 }
 
+interface FetchOptions extends RequestInit {
+  skipJsonContentType?: boolean;
+}
+
 /**
  * Get auth token from localStorage
  */
@@ -44,37 +48,60 @@ function getCsrfToken(): string | null {
   return null;
 }
 
-/**
- * Fetch wrapper with auth token and CSRF protection
- */
-async function fetchWithAuth(
-  endpoint: string,
-  options: RequestInit = {}
-): Promise<Response> {
-  const token = getToken();
+function buildHeaders(
+  options: FetchOptions,
+  { includeAuth = false }: { includeAuth?: boolean } = {}
+): Record<string, string> {
   const csrfToken = getCsrfToken();
   const headers: Record<string, string> = {
     ...((options.headers as Record<string, string>) || {}),
   };
 
-  // Only set Content-Type if body is not FormData (which sets its own boundary)
-  if (!(options.body instanceof FormData)) {
+  const unsafeMethods = ['POST', 'PUT', 'DELETE', 'PATCH'];
+  const method = options.method || 'GET';
+
+  if (!options.skipJsonContentType && !(options.body instanceof FormData) && !headers['Content-Type']) {
     headers['Content-Type'] = 'application/json';
   }
 
-  if (token) {
-    headers['Authorization'] = `Bearer ${token}`;
+  if (includeAuth) {
+    const token = getToken();
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
   }
 
-  // Add CSRF token for state-changing requests
-  const unsafeMethods = ['POST', 'PUT', 'DELETE', 'PATCH'];
-  if (csrfToken && unsafeMethods.includes(options.method || 'GET')) {
+  if (csrfToken && unsafeMethods.includes(method)) {
     headers['X-CSRF-Token'] = csrfToken;
   }
 
+  return headers;
+}
+
+/**
+ * Fetch wrapper with auth token and CSRF protection
+ */
+async function fetchWithAuth(
+  endpoint: string,
+  options: FetchOptions = {}
+): Promise<Response> {
+  const { skipJsonContentType, ...requestOptions } = options;
   const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-    ...options,
-    headers,
+    ...requestOptions,
+    headers: buildHeaders(options, { includeAuth: true }),
+  });
+
+  return response;
+}
+
+async function fetchWithCsrf(
+  endpoint: string,
+  options: FetchOptions = {}
+): Promise<Response> {
+  const { skipJsonContentType, ...requestOptions } = options;
+  const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+    ...requestOptions,
+    headers: buildHeaders(options),
   });
 
   return response;
@@ -123,6 +150,21 @@ export const api = {
     const response = await fetch(`${API_BASE_URL}/legal/${slug}`);
     return handleResponse(response);
   },
+
+  async submitContact(data: {
+    name: string;
+    email: string;
+    phone: string;
+    service: string;
+    message: string;
+    website?: string;
+  }) {
+    const response = await fetchWithCsrf('/contact', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+    return handleResponse(response);
+  },
 };
 
 // Admin API (auth required)
@@ -144,6 +186,31 @@ export const adminApi = {
 
   async verifyToken() {
     const response = await fetchWithAuth('/auth/verify');
+    return handleResponse(response);
+  },
+
+  async getProfile() {
+    const response = await fetchWithAuth('/auth/profile', { skipJsonContentType: true });
+    return handleResponse(response);
+  },
+
+  async updatePassword(data: {
+    currentPassword: string;
+    newPassword: string;
+    confirmPassword: string;
+  }) {
+    const response = await fetchWithAuth('/auth/password', {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+    return handleResponse(response);
+  },
+
+  async updateEmail(email: string) {
+    const response = await fetchWithAuth('/auth/email', {
+      method: 'PUT',
+      body: JSON.stringify({ email }),
+    });
     return handleResponse(response);
   },
 
@@ -190,26 +257,25 @@ export const adminApi = {
     return handleResponse(response);
   },
 
+  async getAdminLegalPages() {
+    const response = await fetchWithAuth('/legal/admin/pages', { skipJsonContentType: true });
+    return handleResponse(response);
+  },
+
   // Media management endpoints
   async getMedia() {
-    const response = await fetchWithAuth('/media');
+    const response = await fetchWithAuth('/media', { skipJsonContentType: true });
     return handleResponse(response);
   },
 
   async uploadImage(file: File) {
-    const token = getToken();
-    const csrfToken = getCsrfToken();
     const formData = new FormData();
     formData.append('image', file);
 
-    const headers: Record<string, string> = {};
-    if (token) headers['Authorization'] = `Bearer ${token}`;
-    if (csrfToken) headers['X-CSRF-Token'] = csrfToken;
-
-    const response = await fetch(`${API_BASE_URL}/media/upload`, {
+    const response = await fetchWithAuth('/media/upload', {
       method: 'POST',
-      headers,
       body: formData,
+      skipJsonContentType: true,
     });
     return handleResponse(response);
   },
@@ -223,7 +289,86 @@ export const adminApi = {
 
   // Analytics endpoints
   async getAnalyticsStats(days: number = 7) {
-    const response = await fetchWithAuth(`/analytics/stats?days=${days}`);
+    const response = await fetchWithAuth(`/analytics/stats?days=${days}`, { skipJsonContentType: true });
+    return handleResponse(response);
+  },
+
+  // Contact management endpoints
+  async getContacts(params?: { status?: string; search?: string; limit?: number; offset?: number }) {
+    const queryParams = new URLSearchParams();
+    if (params?.status) queryParams.append('status', params.status);
+    if (params?.search) queryParams.append('search', params.search);
+    if (params?.limit) queryParams.append('limit', params.limit.toString());
+    if (params?.offset) queryParams.append('offset', params.offset.toString());
+
+    const suffix = queryParams.toString();
+    const response = await fetchWithAuth(`/contacts${suffix ? `?${suffix}` : ''}`, { skipJsonContentType: true });
+    return handleResponse(response);
+  },
+
+  async getContactStats() {
+    const response = await fetchWithAuth('/contacts/stats', { skipJsonContentType: true });
+    return handleResponse(response);
+  },
+
+  async updateContact(id: number, updates: Record<string, unknown>) {
+    const response = await fetchWithAuth(`/contacts/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(updates),
+    });
+    return handleResponse(response);
+  },
+
+  async deleteContact(id: number) {
+    const response = await fetchWithAuth(`/contacts/${id}`, {
+      method: 'DELETE',
+    });
+    return handleResponse(response);
+  },
+
+  async exportContacts() {
+    const response = await fetchWithAuth('/contacts/export', { skipJsonContentType: true });
+
+    if (!response.ok) {
+      const error: APIError = await response.json().catch(() => ({
+        error: 'An unexpected error occurred',
+      }));
+      throw new Error(error.error || `HTTP ${response.status}`);
+    }
+
+    return response.blob();
+  },
+
+  // System settings endpoints
+  async getSMTPConfig() {
+    const response = await fetchWithAuth('/system-settings/smtp', { skipJsonContentType: true });
+    return handleResponse(response);
+  },
+
+  async updateSMTPConfig(data: {
+    host: string;
+    port: number;
+    user: string;
+    pass: string;
+    from: string;
+  }) {
+    const response = await fetchWithAuth('/system-settings/smtp', {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+    return handleResponse(response);
+  },
+
+  async testSMTPConfig(data: {
+    host: string;
+    port: number;
+    user: string;
+    pass?: string;
+  }) {
+    const response = await fetchWithAuth('/system-settings/smtp/test', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
     return handleResponse(response);
   },
 
@@ -235,17 +380,18 @@ export const adminApi = {
     if (params?.limit) queryParams.append('limit', params.limit.toString());
     if (params?.offset) queryParams.append('offset', params.offset.toString());
 
-    const response = await fetchWithAuth(`/invoices?${queryParams.toString()}`);
+    const suffix = queryParams.toString();
+    const response = await fetchWithAuth(`/invoices${suffix ? `?${suffix}` : ''}`, { skipJsonContentType: true });
     return handleResponse(response);
   },
 
   async getInvoiceStats() {
-    const response = await fetchWithAuth('/invoices/stats');
+    const response = await fetchWithAuth('/invoices/stats', { skipJsonContentType: true });
     return handleResponse(response);
   },
 
   async getInvoice(id: number) {
-    const response = await fetchWithAuth(`/invoices/${id}`);
+    const response = await fetchWithAuth(`/invoices/${id}`, { skipJsonContentType: true });
     return handleResponse(response);
   },
 

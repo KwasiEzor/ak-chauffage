@@ -1,6 +1,6 @@
-import { useContent } from '../../contexts/ContentContext';
+import { lazy, Suspense, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { useState, useEffect } from 'react';
+import { useContent } from '../../contexts/ContentContext';
 import { adminApi } from '../../utils/api';
 import type { InvoiceStats } from '../../types/invoice';
 import {
@@ -15,15 +15,8 @@ import {
   Users,
   BarChart3,
 } from 'lucide-react';
-import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-} from 'recharts';
+
+const DashboardVisitorsChart = lazy(() => import('../components/charts/DashboardVisitorsChart'));
 
 interface AnalyticsStats {
   totalPageViews: number;
@@ -106,6 +99,12 @@ export default function Dashboard() {
       external: true,
     },
   ];
+
+  const chartFallback = (
+    <div className="h-48 flex items-center justify-center text-sm text-zinc-500">
+      Chargement du graphique...
+    </div>
+  );
 
   return (
     <div className="space-y-8">
@@ -197,36 +196,9 @@ export default function Dashboard() {
             </div>
           </div>
 
-          <div className="h-48">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={analyticsStats.dailyViews}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#3f3f46" />
-                <XAxis
-                  dataKey="date"
-                  stroke="#a1a1aa"
-                  style={{ fontSize: '12px' }}
-                />
-                <YAxis stroke="#a1a1aa" style={{ fontSize: '12px' }} />
-                <Tooltip
-                  contentStyle={{
-                    backgroundColor: '#27272a',
-                    border: '1px solid #3f3f46',
-                    borderRadius: '8px',
-                    color: '#fff',
-                  }}
-                />
-                <Line
-                  type="monotone"
-                  dataKey="views"
-                  name="Vues"
-                  stroke="#f97316"
-                  strokeWidth={2}
-                  dot={{ fill: '#f97316', r: 4 }}
-                  activeDot={{ r: 6 }}
-                />
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
+          <Suspense fallback={chartFallback}>
+            <DashboardVisitorsChart dailyViews={analyticsStats.dailyViews} />
+          </Suspense>
         </div>
       )}
 

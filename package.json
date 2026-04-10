@@ -18,6 +18,9 @@
     "pm2:monit": "pm2 monit",
     "webhook": "pm2 start webhook-server.cjs --name webhook",
     "deploy": "bash deploy.sh",
+    "test": "npm run test:smoke",
+    "test:e2e": "node tests/run-e2e.cjs",
+    "test:smoke": "node --test tests/smoke.test.cjs",
     "test:email": "node test-email.cjs",
     "start:prod": "NODE_ENV=production node server/index.cjs",
     "migrate:postgres": "node server/database/migrations/migrate-to-postgres.cjs",
@@ -55,6 +58,7 @@
   "devDependencies": {
     "@babel/core": "^7.29.0",
     "@eslint/js": "^9.39.4",
+    "@playwright/test": "^1.59.1",
     "@rolldown/plugin-babel": "^0.2.2",
     "@tailwindcss/vite": "^4.2.2",
     "@types/bcrypt": "^6.0.0",

@@ -11,6 +11,12 @@
 - [x] GitHub repository
 - [x] All configuration complete (verified!)
 
+## Runtime Storage Rules
+
+- `data/*.db`, `data/*.db-shm`, and `data/*.db-wal` are local runtime artifacts and should not be committed.
+- Production should use Render PostgreSQL via `DATABASE_URL`.
+- `uploads/` needs persistent storage or Cloudinary if uploaded media must survive deploys.
+
 ---
 
 ## 🚀 Quick Deploy (10 Minutes)

@@ -1,7 +1,7 @@
 const { db, DB_TYPE } = require('./connection.cjs');
 const bcrypt = require('bcrypt');
 
-const ACTIVE_COL = DB_TYPE === 'postgres' ? 'is_active' : 'active';
+const ACTIVE_COL = 'active';
 
 class AdminService {
   /**

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Search, Mail, Phone, Calendar, Filter, Download, RefreshCw, Trash2, Eye, MessageSquare } from 'lucide-react';
+import { Search, Mail, Phone, Calendar, Download, RefreshCw, Trash2, Eye } from 'lucide-react';
 import { adminApi } from '../../utils/api';
 
 interface Contact {
@@ -32,13 +32,6 @@ const STATUS_COLORS = {
   archived: 'bg-gray-500/10 text-gray-600 border-gray-500/20',
 };
 
-const STATUS_LABELS = {
-  pending: 'Nouveau',
-  contacted: 'Contacté',
-  completed: 'Terminé',
-  archived: 'Archivé',
-};
-
 export default function Contacts() {
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [stats, setStats] = useState<Stats | null>(null);
@@ -46,7 +39,6 @@ export default function Contacts() {
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [selectedContact, setSelectedContact] = useState<Contact | null>(null);
-  const [total, setTotal] = useState(0);
 
   useEffect(() => {
     fetchContacts();
@@ -56,21 +48,11 @@ export default function Contacts() {
   const fetchContacts = async () => {
     try {
       setLoading(true);
-      const params = new URLSearchParams();
-      if (search) params.append('search', search);
-      if (statusFilter !== 'all') params.append('status', statusFilter);
-
-      const response = await fetch(`/api/contacts?${params}`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('admin_token')}`,
-        },
+      const data = await adminApi.getContacts({
+        search: search || undefined,
+        status: statusFilter !== 'all' ? statusFilter : undefined,
       });
-
-      if (!response.ok) throw new Error('Failed to fetch');
-
-      const data = await response.json();
       setContacts(data.contacts);
-      setTotal(data.total);
     } catch (error) {
       console.error('Error fetching contacts:', error);
     } finally {
@@ -80,15 +62,7 @@ export default function Contacts() {
 
   const fetchStats = async () => {
     try {
-      const response = await fetch('/api/contacts/stats', {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('admin_token')}`,
-        },
-      });
-
-      if (!response.ok) throw new Error('Failed to fetch stats');
-
-      const data = await response.json();
+      const data = await adminApi.getContactStats();
       setStats(data);
     } catch (error) {
       console.error('Error fetching stats:', error);
@@ -97,16 +71,7 @@ export default function Contacts() {
 
   const updateContact = async (id: number, updates: Partial<Contact>) => {
     try {
-      const response = await fetch(`/api/contacts/${id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${localStorage.getItem('admin_token')}`,
-        },
-        body: JSON.stringify(updates),
-      });
-
-      if (!response.ok) throw new Error('Failed to update');
+      await adminApi.updateContact(id, updates);
 
       await fetchContacts();
       await fetchStats();
@@ -124,14 +89,7 @@ export default function Contacts() {
     if (!confirm('Êtes-vous sûr de vouloir supprimer ce contact ?')) return;
 
     try {
-      const response = await fetch(`/api/contacts/${id}`, {
-        method: 'DELETE',
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('admin_token')}`,
-        },
-      });
-
-      if (!response.ok) throw new Error('Failed to delete');
+      await adminApi.deleteContact(id);
 
       await fetchContacts();
       await fetchStats();
@@ -141,8 +99,21 @@ export default function Contacts() {
     }
   };
 
-  const exportToCSV = () => {
-    window.open(`/api/contacts/export?token=${localStorage.getItem('admin_token')}`, '_blank');
+  const exportToCSV = async () => {
+    try {
+      const blob = await adminApi.exportContacts();
+      const downloadUrl = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = downloadUrl;
+      link.download = 'contacts.csv';
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(downloadUrl);
+    } catch (error) {
+      console.error('Error exporting contacts:', error);
+      alert('Erreur lors de l’export CSV');
+    }
   };
 
   const formatDate = (dateString: string) => {

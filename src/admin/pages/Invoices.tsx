@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom';
 import { adminApi } from '../../utils/api';
 import { Receipt, Plus, Download, Trash2, Search, Filter, AlertCircle } from 'lucide-react';
 import type { InvoiceListItem, InvoiceStats } from '../../types/invoice';
-import { generateInvoicePDF } from '../../utils/pdfGenerator';
 import { useContent } from '../../contexts/ContentContext';
 
 export default function Invoices() {
@@ -55,6 +54,7 @@ export default function Invoices() {
     try {
       const invoice = await adminApi.getInvoice(id);
       if (settings) {
+        const { generateInvoicePDF } = await import('../../utils/pdfGenerator');
         generateInvoicePDF(invoice, settings);
       }
     } catch (err) {

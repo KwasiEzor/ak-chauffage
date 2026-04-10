@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Save, AlertCircle, CheckCircle2, Mail, Server, Send, Shield, Info } from 'lucide-react';
+import { adminApi } from '../../utils/api';
 
 interface SMTPConfig {
   host: string;
@@ -30,15 +31,7 @@ export default function SystemSettings() {
 
   const fetchSMTPConfig = async () => {
     try {
-      const response = await fetch('/api/system-settings/smtp', {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('admin_token')}`,
-        },
-      });
-
-      if (!response.ok) throw new Error('Failed to fetch SMTP config');
-
-      const data = await response.json();
+      const data = await adminApi.getSMTPConfig();
       setSmtpConfig(data);
     } catch (error) {
       console.error('Error fetching SMTP config:', error);
@@ -54,26 +47,13 @@ export default function SystemSettings() {
     setMessage(null);
 
     try {
-      const response = await fetch('/api/system-settings/smtp', {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${localStorage.getItem('admin_token')}`,
-        },
-        body: JSON.stringify({
-          host: smtpConfig.host,
-          port: smtpConfig.port,
-          user: smtpConfig.user,
-          pass: password,
-          from: smtpConfig.from,
-        }),
+      await adminApi.updateSMTPConfig({
+        host: smtpConfig.host,
+        port: smtpConfig.port,
+        user: smtpConfig.user,
+        pass: password,
+        from: smtpConfig.from,
       });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to save SMTP configuration');
-      }
 
       setMessage({ type: 'success', text: 'SMTP configuration saved successfully!' });
       setPassword(''); // Clear password field
@@ -93,25 +73,12 @@ export default function SystemSettings() {
     setMessage(null);
 
     try {
-      const response = await fetch('/api/system-settings/smtp/test', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${localStorage.getItem('admin_token')}`,
-        },
-        body: JSON.stringify({
-          host: smtpConfig.host,
-          port: smtpConfig.port,
-          user: smtpConfig.user,
-          pass: password || undefined, // Use new password if provided
-        }),
+      const data = await adminApi.testSMTPConfig({
+        host: smtpConfig.host,
+        port: smtpConfig.port,
+        user: smtpConfig.user,
+        pass: password || undefined,
       });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Connection test failed');
-      }
 
       setMessage({ type: 'success', text: data.message || 'SMTP connection successful!' });
     } catch (error) {

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { Save, AlertCircle, CheckCircle2, Lock, Mail, User, Shield, Clock, Calendar } from 'lucide-react';
+import { adminApi } from '../../utils/api';
 
 interface ProfileData {
   id: number;
@@ -15,7 +16,7 @@ interface ProfileData {
 }
 
 export default function Profile() {
-  const { user } = useAuth();
+  const { logout } = useAuth();
   const [profile, setProfile] = useState<ProfileData | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -37,15 +38,7 @@ export default function Profile() {
 
   const fetchProfile = async () => {
     try {
-      const response = await fetch('/api/auth/profile', {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('admin_token')}`,
-        },
-      });
-
-      if (!response.ok) throw new Error('Failed to fetch profile');
-
-      const data = await response.json();
+      const data = await adminApi.getProfile();
       setProfile(data);
       setEmail(data.email || '');
     } catch (error) {
@@ -62,27 +55,17 @@ export default function Profile() {
     setMessage(null);
 
     try {
-      const response = await fetch('/api/auth/password', {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${localStorage.getItem('admin_token')}`,
-        },
-        body: JSON.stringify(passwordForm),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to change password');
-      }
+      const data = await adminApi.updatePassword(passwordForm);
 
       setMessage({ type: 'success', text: data.message || 'Password updated successfully!' });
       setPasswordForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
 
-      // Auto-logout after 2 seconds
+      // Auto-logout after 2 seconds so the new password takes effect cleanly
       setTimeout(() => {
-        window.location.href = '/admin/login';
+        logout().catch((error) => {
+          console.error('Logout after password change failed:', error);
+          window.location.href = '/admin/login';
+        });
       }, 2000);
     } catch (error) {
       setMessage({
@@ -100,20 +83,7 @@ export default function Profile() {
     setMessage(null);
 
     try {
-      const response = await fetch('/api/auth/email', {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${localStorage.getItem('admin_token')}`,
-        },
-        body: JSON.stringify({ email }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to update email');
-      }
+      await adminApi.updateEmail(email);
 
       setMessage({ type: 'success', text: 'Email updated successfully!' });
       await fetchProfile();

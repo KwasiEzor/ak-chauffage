@@ -9,6 +9,13 @@ Complete guide for deploying AK Chauffage to production on Railway.
 - Resend account for emails ([resend.com](https://resend.com))
 - Cloudinary account for images (optional but recommended) ([cloudinary.com](https://cloudinary.com))
 
+## Runtime Storage Rules
+
+- Do not commit `data/*.db`, `data/*.db-shm`, or `data/*.db-wal`; those are local runtime files.
+- Keep `data/content.json`, `data/settings.json`, and `data/legal.json` in git.
+- Production should use PostgreSQL via `DATABASE_URL`.
+- Treat `uploads/` as persistent runtime storage or move uploads to Cloudinary.
+
 ## 🗂️ Part 1: Prepare Your Repository
 
 ### 1.1 Commit All Changes
@@ -34,7 +41,7 @@ Ensure these files exist:
 2. Click **"New Project"**
 3. Select **"Deploy from GitHub repo"**
 4. Choose your `ak-chauffage` repository
-5. Wait for initial deployment (it will fail - that's expected!)
+5. Wait for the initial deployment to complete
 
 ### 2.2 Add PostgreSQL Database
 

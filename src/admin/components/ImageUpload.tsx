@@ -1,5 +1,6 @@
 import { useState, useRef } from 'react';
 import { Upload, Loader2, Check, X } from 'lucide-react';
+import { adminApi } from '../../utils/api';
 
 interface ImageUploadProps {
   currentValue: string;
@@ -34,23 +35,8 @@ export default function ImageUpload({ currentValue, onUploadComplete, label = 'I
     setSuccess(false);
 
     try {
-      const formData = new FormData();
-      formData.append('image', file);
-
-      const response = await fetch('/api/media/upload', {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('admin_token')}`,
-        },
-        body: formData,
-      });
-
-      if (!response.ok) {
-        throw new Error('Upload failed');
-      }
-
-      const data = await response.json();
-      onUploadComplete(data.url);
+      const data = await adminApi.uploadImage(file);
+      onUploadComplete(data.file.url);
       setSuccess(true);
       setTimeout(() => setSuccess(false), 2000);
     } catch (err) {

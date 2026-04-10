@@ -1,21 +1,8 @@
-import { useState, useEffect } from 'react';
+import { lazy, Suspense, useEffect, useState } from 'react';
 import { adminApi } from '../../utils/api';
 import { TrendingUp, Users, Eye, Calendar, AlertCircle } from 'lucide-react';
-import {
-  LineChart,
-  Line,
-  BarChart,
-  Bar,
-  PieChart,
-  Pie,
-  Cell,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
-} from 'recharts';
+
+const AnalyticsCharts = lazy(() => import('../components/charts/AnalyticsCharts'));
 
 interface AnalyticsStats {
   totalPageViews: number;
@@ -49,9 +36,6 @@ export default function Analytics() {
     fetchStats();
   }, [timeRange]);
 
-  // Chart colors
-  const COLORS = ['#f97316', '#3b82f6', '#10b981', '#f59e0b', '#8b5cf6'];
-
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
@@ -72,6 +56,11 @@ export default function Analytics() {
   if (!stats) return null;
 
   const avgViewsPerDay = stats.totalPageViews / timeRange;
+  const chartFallback = (
+    <div className="bg-zinc-800 border border-zinc-700 rounded-xl p-6 text-sm text-zinc-500">
+      Chargement des graphiques...
+    </div>
+  );
 
   return (
     <div className="space-y-6">
@@ -144,125 +133,9 @@ export default function Analytics() {
         </div>
       </div>
 
-      {/* Daily Views Chart */}
-      <div className="bg-zinc-800 border border-zinc-700 rounded-xl p-6">
-        <h2 className="text-xl font-bold text-white mb-4">Vues Quotidiennes</h2>
-        <ResponsiveContainer width="100%" height={300}>
-          <LineChart data={stats.dailyViews}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#3f3f46" />
-            <XAxis dataKey="date" stroke="#a1a1aa" />
-            <YAxis stroke="#a1a1aa" />
-            <Tooltip
-              contentStyle={{
-                backgroundColor: '#27272a',
-                border: '1px solid #3f3f46',
-                borderRadius: '8px',
-                color: '#fff',
-              }}
-            />
-            <Legend />
-            <Line
-              type="monotone"
-              dataKey="views"
-              name="Vues"
-              stroke="#f97316"
-              strokeWidth={2}
-              dot={{ fill: '#f97316' }}
-            />
-          </LineChart>
-        </ResponsiveContainer>
-      </div>
-
-      <div className="grid md:grid-cols-2 gap-6">
-        {/* Popular Pages */}
-        <div className="bg-zinc-800 border border-zinc-700 rounded-xl p-6">
-          <h2 className="text-xl font-bold text-white mb-4">Pages Populaires</h2>
-          <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={stats.popularPages.slice(0, 5)}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#3f3f46" />
-              <XAxis dataKey="page_path" stroke="#a1a1aa" tick={{ fontSize: 12 }} />
-              <YAxis stroke="#a1a1aa" />
-              <Tooltip
-                contentStyle={{
-                  backgroundColor: '#27272a',
-                  border: '1px solid #3f3f46',
-                  borderRadius: '8px',
-                  color: '#fff',
-                }}
-              />
-              <Bar dataKey="views" name="Vues" fill="#f97316" radius={[8, 8, 0, 0]} />
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
-
-        {/* Traffic Sources */}
-        <div className="bg-zinc-800 border border-zinc-700 rounded-xl p-6">
-          <h2 className="text-xl font-bold text-white mb-4">Sources de Trafic</h2>
-          <ResponsiveContainer width="100%" height={300}>
-            <PieChart>
-              <Pie
-                data={stats.trafficSources}
-                cx="50%"
-                cy="50%"
-                labelLine={false}
-                label={({ name, percent }) =>
-                  `${name}: ${(percent * 100).toFixed(0)}%`
-                }
-                outerRadius={100}
-                fill="#8884d8"
-                dataKey="value"
-              >
-                {stats.trafficSources.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                ))}
-              </Pie>
-              <Tooltip
-                contentStyle={{
-                  backgroundColor: '#27272a',
-                  border: '1px solid #3f3f46',
-                  borderRadius: '8px',
-                  color: '#fff',
-                }}
-              />
-            </PieChart>
-          </ResponsiveContainer>
-        </div>
-
-        {/* Device Breakdown */}
-        <div className="bg-zinc-800 border border-zinc-700 rounded-xl p-6 md:col-span-2">
-          <h2 className="text-xl font-bold text-white mb-4">Appareils Utilisés</h2>
-          <div className="flex items-center justify-center">
-            <ResponsiveContainer width="100%" height={300}>
-              <PieChart>
-                <Pie
-                  data={stats.deviceBreakdown}
-                  cx="50%"
-                  cy="50%"
-                  labelLine={false}
-                  label={({ name, percent }) =>
-                    `${name}: ${(percent * 100).toFixed(0)}%`
-                  }
-                  outerRadius={100}
-                  fill="#8884d8"
-                  dataKey="value"
-                >
-                  {stats.deviceBreakdown.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                  ))}
-                </Pie>
-                <Tooltip
-                  contentStyle={{
-                    backgroundColor: '#27272a',
-                    border: '1px solid #3f3f46',
-                    borderRadius: '8px',
-                    color: '#fff',
-                  }}
-                />
-              </PieChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
-      </div>
+      <Suspense fallback={chartFallback}>
+        <AnalyticsCharts stats={stats} />
+      </Suspense>
 
       {/* GDPR Notice */}
       <div className="bg-blue-500/10 border border-blue-500/20 rounded-xl p-4">

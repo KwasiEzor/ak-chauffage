@@ -38,6 +38,25 @@ router.get('/', async (req, res) => {
 });
 
 /**
+ * GET /api/legal/admin/pages
+ * Get all legal pages with full content (protected)
+ */
+router.get('/admin/pages', authMiddleware, async (req, res) => {
+  try {
+    const data = await readJSON(LEGAL_FILE);
+
+    if (!data || !data.pages) {
+      return res.status(404).json({ error: ERRORS.LEGAL.NOT_FOUND });
+    }
+
+    res.json(data.pages);
+  } catch (error) {
+    console.error('Error reading admin legal pages:', error);
+    res.status(500).json({ error: ERRORS.GENERAL.INTERNAL_ERROR });
+  }
+});
+
+/**
  * GET /api/legal/:slug
  * Get a specific legal page by slug (public endpoint)
  */

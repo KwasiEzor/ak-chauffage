@@ -3,7 +3,6 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { adminApi } from '../../utils/api';
 import { Save, Plus, X, Download, ArrowLeft, CheckCircle2, AlertCircle } from 'lucide-react';
 import type { Invoice, InvoiceLineItem } from '../../types/invoice';
-import { generateInvoicePDF } from '../../utils/pdfGenerator';
 import { useContent } from '../../contexts/ContentContext';
 
 export default function InvoiceEditor() {
@@ -197,7 +196,7 @@ export default function InvoiceEditor() {
     }
   };
 
-  const handleDownloadPDF = () => {
+  const handleDownloadPDF = async () => {
     if (!invoice.invoice_number) {
       setMessage({ type: 'error', text: 'Please save the invoice before downloading PDF' });
       return;
@@ -209,6 +208,7 @@ export default function InvoiceEditor() {
     }
 
     try {
+      const { generateInvoicePDF } = await import('../../utils/pdfGenerator');
       generateInvoicePDF(invoice, settings);
       setMessage({ type: 'success', text: 'PDF downloaded successfully!' });
     } catch (error) {
