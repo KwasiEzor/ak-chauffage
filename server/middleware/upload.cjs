@@ -33,7 +33,7 @@ const fileFilter = (req, file, cb) => {
 };
 
 // Create multer instance
-const upload = multer({
+const uploadMiddleware = multer({
   storage: storage,
   limits: {
     fileSize: 5 * 1024 * 1024, // 5MB limit
@@ -41,4 +41,12 @@ const upload = multer({
   fileFilter: fileFilter,
 });
 
-module.exports = upload;
+// Helper functions (placeholders until Cloudinary is fully integrated)
+const getCloudinaryUrl = (file) => null;
+const deleteFromCloudinary = (publicId) => Promise.resolve(true);
+
+module.exports = {
+  upload: uploadMiddleware,
+  getCloudinaryUrl,
+  deleteFromCloudinary
+};
