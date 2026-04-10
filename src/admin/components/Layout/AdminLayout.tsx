@@ -78,7 +78,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
           </div>
 
           {/* Navigation */}
-          <nav className="flex-1 p-4 space-y-1">
+          <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
             {navigation.map((item) => {
               const isActive = location.pathname === item.href;
               return (
@@ -134,12 +134,20 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       {/* Main Content */}
       <div className="flex-1 lg:ml-64">
         {/* Mobile Header */}
-        <header className="lg:hidden sticky top-0 z-40 bg-zinc-800 border-b border-zinc-700 px-4 py-3">
+        <header className="lg:hidden sticky top-0 z-40 bg-zinc-800 border-b border-zinc-700 px-4 py-3 flex items-center justify-between">
           <button
             onClick={() => setSidebarOpen(true)}
             className="text-zinc-400 hover:text-white"
           >
             <Menu className="w-6 h-6" />
+          </button>
+          
+          <button
+            onClick={handleLogout}
+            className="text-zinc-400 hover:text-white"
+            title="Logout"
+          >
+            <LogOut className="w-5 h-5" />
           </button>
         </header>
 
