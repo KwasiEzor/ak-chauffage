@@ -174,10 +174,12 @@ async function start() {
     const addAnalyticsTable = require('./database/migrations/add-analytics.cjs');
     const addInvoiceTables = require('./database/migrations/add-invoices.cjs');
     const fixColumnNames = require('./database/migrations/fix-column-names.cjs');
+    const fixSchemaMismatches = require('./database/migrations/fix-schema-mismatches.cjs');
     migrateEnvAdmin();
     addAnalyticsTable();
     addInvoiceTables();
     await fixColumnNames();
+    await fixSchemaMismatches();
 
     app.listen(PORT, () => {
       console.log(`🚀 Server running on port ${PORT}`);

@@ -80,11 +80,13 @@ async function migrate() {
         id SERIAL PRIMARY KEY,
         name VARCHAR(255) NOT NULL,
         email VARCHAR(255) NOT NULL,
-        phone VARCHAR(50),
-        subject VARCHAR(255),
-        message TEXT NOT NULL,
-        status VARCHAR(50) DEFAULT 'new',
+        phone VARCHAR(50) NOT NULL,
+        service VARCHAR(255) NOT NULL,
+        message TEXT,
+        status VARCHAR(50) DEFAULT 'pending',
         notes TEXT,
+        ip_address VARCHAR(45),
+        user_agent TEXT,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
@@ -106,13 +108,13 @@ async function migrate() {
         client_address TEXT,
         issue_date DATE NOT NULL,
         due_date DATE,
+        paid_date DATE,
         subtotal DECIMAL(10, 2) NOT NULL,
         tax_rate DECIMAL(5, 2) DEFAULT 21.00,
-        tax_amount DECIMAL(10, 2) NOT NULL,
+        tax_amount DECIMAL(10, 2),
         total DECIMAL(10, 2) NOT NULL,
         notes TEXT,
-        paid_at TIMESTAMP,
-        sent_at TIMESTAMP,
+        created_by INTEGER REFERENCES admins(id),
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
@@ -122,21 +124,22 @@ async function migrate() {
     await pool.query('CREATE INDEX IF NOT EXISTS idx_invoices_issue_date ON invoices(issue_date DESC)');
     console.log('✅ invoices table created\n');
 
-    // Create invoice_items table
-    console.log('📦 Creating invoice_items table...');
+    // Create invoice_line_items table
+    console.log('📦 Creating invoice_line_items table...');
     await pool.query(`
-      CREATE TABLE IF NOT EXISTS invoice_items (
+      CREATE TABLE IF NOT EXISTS invoice_line_items (
         id SERIAL PRIMARY KEY,
         invoice_id INTEGER REFERENCES invoices(id) ON DELETE CASCADE,
         description TEXT NOT NULL,
         quantity DECIMAL(10, 2) NOT NULL,
         unit_price DECIMAL(10, 2) NOT NULL,
         amount DECIMAL(10, 2) NOT NULL,
+        line_order INTEGER DEFAULT 0,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
     `);
-    await pool.query('CREATE INDEX IF NOT EXISTS idx_invoice_items_invoice_id ON invoice_items(invoice_id)');
-    console.log('✅ invoice_items table created\n');
+    await pool.query('CREATE INDEX IF NOT EXISTS idx_line_items_invoice ON invoice_line_items(invoice_id)');
+    console.log('✅ invoice_line_items table created\n');
 
     // Create visitor_analytics table
     console.log('📦 Creating visitor_analytics table...');
