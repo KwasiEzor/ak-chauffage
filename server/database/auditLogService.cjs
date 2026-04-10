@@ -154,4 +154,3 @@ class AuditLogService {
 }
 
 module.exports = AuditLogService;
-dule.exports = AuditLogService;
