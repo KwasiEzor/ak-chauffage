@@ -8,11 +8,11 @@ const router = express.Router();
  * GET /api/contacts
  * Get all contacts (with filters and pagination)
  */
-router.get('/', authMiddleware, (req, res) => {
+router.get('/', authMiddleware, async (req, res) => {
   try {
     const { status, search, limit, offset } = req.query;
 
-    const result = ContactService.getAll({
+    const result = await ContactService.getAll({
       status,
       search,
       limit: limit ? parseInt(limit) : 50,
@@ -30,9 +30,9 @@ router.get('/', authMiddleware, (req, res) => {
  * GET /api/contacts/stats
  * Get contact statistics
  */
-router.get('/stats', authMiddleware, (req, res) => {
+router.get('/stats', authMiddleware, async (req, res) => {
   try {
-    const stats = ContactService.getStats();
+    const stats = await ContactService.getStats();
     res.json(stats);
   } catch (error) {
     console.error('Error fetching stats:', error);
@@ -44,9 +44,9 @@ router.get('/stats', authMiddleware, (req, res) => {
  * GET /api/contacts/export
  * Export contacts to CSV
  */
-router.get('/export', authMiddleware, (req, res) => {
+router.get('/export', authMiddleware, async (req, res) => {
   try {
-    const csvData = ContactService.exportToCSV();
+    const csvData = await ContactService.exportToCSV();
 
     // Convert to CSV string
     const csv = csvData.map(row => row.map(cell => `"${cell}"`).join(',')).join('\n');
@@ -64,9 +64,9 @@ router.get('/export', authMiddleware, (req, res) => {
  * GET /api/contacts/:id
  * Get a single contact
  */
-router.get('/:id', authMiddleware, (req, res) => {
+router.get('/:id', authMiddleware, async (req, res) => {
   try {
-    const contact = ContactService.getById(req.params.id);
+    const contact = await ContactService.getById(req.params.id);
 
     if (!contact) {
       return res.status(404).json({ error: 'Contact not found' });
@@ -83,7 +83,7 @@ router.get('/:id', authMiddleware, (req, res) => {
  * PUT /api/contacts/:id
  * Update contact status and notes
  */
-router.put('/:id', authMiddleware, (req, res) => {
+router.put('/:id', authMiddleware, async (req, res) => {
   try {
     const { status, notes } = req.body;
 
@@ -93,7 +93,7 @@ router.put('/:id', authMiddleware, (req, res) => {
       return res.status(400).json({ error: 'Invalid status' });
     }
 
-    const contact = ContactService.update(req.params.id, { status, notes });
+    const contact = await ContactService.update(req.params.id, { status, notes });
 
     if (!contact) {
       return res.status(404).json({ error: 'Contact not found' });
@@ -110,9 +110,9 @@ router.put('/:id', authMiddleware, (req, res) => {
  * DELETE /api/contacts/:id
  * Delete a contact
  */
-router.delete('/:id', authMiddleware, (req, res) => {
+router.delete('/:id', authMiddleware, async (req, res) => {
   try {
-    const success = ContactService.delete(req.params.id);
+    const success = await ContactService.delete(req.params.id);
 
     if (!success) {
       return res.status(404).json({ error: 'Contact not found' });

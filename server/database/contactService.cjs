@@ -9,13 +9,13 @@ class ContactService {
   /**
    * Create a new contact
    */
-  static create({ name, email, phone, service, message, ipAddress, userAgent }) {
+  static async create({ name, email, phone, service, message, ipAddress, userAgent }) {
     const stmt = db.prepare(`
       INSERT INTO contacts (name, email, phone, service, message, ip_address, user_agent)
       VALUES (?, ?, ?, ?, ?, ?, ?)
     `);
 
-    const result = stmt.run(name, email, phone, service, message, ipAddress, userAgent);
+    const result = await stmt.run(name, email, phone, service, message, ipAddress, userAgent);
 
     return {
       id: result.lastInsertRowid,
@@ -32,7 +32,7 @@ class ContactService {
   /**
    * Get all contacts with optional filters
    */
-  static getAll({ status, search, limit = 50, offset = 0 } = {}) {
+  static async getAll({ status, search, limit = 50, offset = 0 } = {}) {
     let query = 'SELECT * FROM contacts WHERE 1=1';
     const params = [];
 
@@ -57,7 +57,7 @@ class ContactService {
     params.push(limit, offset);
 
     const stmt = db.prepare(query);
-    const contacts = stmt.all(...params);
+    const contacts = await stmt.all(...params);
 
     // Get total count for pagination
     let countQuery = 'SELECT COUNT(*) as total FROM contacts WHERE 1=1';
@@ -75,7 +75,7 @@ class ContactService {
     }
 
     const countStmt = db.prepare(countQuery);
-    const { total } = countStmt.get(...countParams);
+    const { total } = await countStmt.get(...countParams);
 
     return {
       contacts,
@@ -88,15 +88,15 @@ class ContactService {
   /**
    * Get a single contact by ID
    */
-  static getById(id) {
+  static async getById(id) {
     const stmt = db.prepare('SELECT * FROM contacts WHERE id = ?');
-    return stmt.get(id);
+    return await stmt.get(id);
   }
 
   /**
    * Update contact status and/or notes
    */
-  static update(id, { status, notes }) {
+  static async update(id, { status, notes }) {
     const updates = [];
     const params = [];
 
@@ -111,7 +111,7 @@ class ContactService {
     }
 
     if (updates.length === 0) {
-      return this.getById(id);
+      return await this.getById(id);
     }
 
     updates.push('updated_at = CURRENT_TIMESTAMP');
@@ -120,24 +120,24 @@ class ContactService {
     params.push(id);
 
     const stmt = db.prepare(query);
-    stmt.run(...params);
+    await stmt.run(...params);
 
-    return this.getById(id);
+    return await this.getById(id);
   }
 
   /**
    * Delete a contact
    */
-  static delete(id) {
+  static async delete(id) {
     const stmt = db.prepare('DELETE FROM contacts WHERE id = ?');
-    const result = stmt.run(id);
+    const result = await stmt.run(id);
     return result.changes > 0;
   }
 
   /**
    * Get contact statistics
    */
-  static getStats() {
+  static async getStats() {
     const stats = {
       total: 0,
       pending: 0,
@@ -155,7 +155,7 @@ class ContactService {
       GROUP BY status
     `);
 
-    const statusCounts = statusStmt.all();
+    const statusCounts = await statusStmt.all();
     statusCounts.forEach(({ status, count }) => {
       stats[status] = count;
       stats.total += count;
@@ -167,7 +167,8 @@ class ContactService {
       FROM contacts
       WHERE DATE(created_at) = DATE('now')
     `);
-    stats.today = todayStmt.get().count;
+    const todayResult = await todayStmt.get();
+    stats.today = todayResult.count;
 
     // This week's contacts
     const weekStmt = db.prepare(`
@@ -175,7 +176,8 @@ class ContactService {
       FROM contacts
       WHERE created_at >= DATE('now', '-7 days')
     `);
-    stats.thisWeek = weekStmt.get().count;
+    const weekResult = await weekStmt.get();
+    stats.thisWeek = weekResult.count;
 
     // This month's contacts
     const monthStmt = db.prepare(`
@@ -183,7 +185,8 @@ class ContactService {
       FROM contacts
       WHERE created_at >= DATE('now', 'start of month')
     `);
-    stats.thisMonth = monthStmt.get().count;
+    const monthResult = await monthStmt.get();
+    stats.thisMonth = monthResult.count;
 
     // Popular services
     const servicesStmt = db.prepare(`
@@ -193,7 +196,7 @@ class ContactService {
       ORDER BY count DESC
       LIMIT 5
     `);
-    stats.popularServices = servicesStmt.all();
+    stats.popularServices = await servicesStmt.all();
 
     return stats;
   }
@@ -201,9 +204,9 @@ class ContactService {
   /**
    * Export contacts to CSV
    */
-  static exportToCSV() {
+  static async exportToCSV() {
     const stmt = db.prepare('SELECT * FROM contacts ORDER BY created_at DESC');
-    const contacts = stmt.all();
+    const contacts = await stmt.all();
 
     // CSV header
     const headers = ['ID', 'Name', 'Email', 'Phone', 'Service', 'Message', 'Status', 'Notes', 'Created At'];
