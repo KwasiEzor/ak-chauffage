@@ -1,11 +1,10 @@
-require('dotenv').config({ path: require('path').join(__dirname, '../../../.env') });
-const db = require('../init.cjs');
+const { db } = require('../connection.cjs');
 
 /**
  * Migrate admin credentials from .env to database
  * This runs once to create the initial admin user
  */
-function migrateEnvAdmin() {
+async function migrateEnvAdmin() {
   const username = process.env.ADMIN_USERNAME;
   const passwordHash = process.env.ADMIN_PASSWORD_HASH;
 
@@ -16,7 +15,7 @@ function migrateEnvAdmin() {
 
   try {
     // Check if admin already exists
-    const existing = db.prepare('SELECT id FROM admins WHERE username = ?').get(username);
+    const existing = await db.prepare('SELECT id FROM admins WHERE username = ?').get(username);
 
     if (existing) {
       console.log('✅ Admin user already exists in database');
@@ -29,7 +28,7 @@ function migrateEnvAdmin() {
       VALUES (?, ?, 'super_admin', ?)
     `);
 
-    const result = stmt.run(username, passwordHash, 'admin@ak-chauffage.be');
+    const result = await stmt.run(username, passwordHash, 'admin@ak-chauffage.be');
 
     console.log('✅ Migrated admin from .env to database:', username);
     console.log('   Admin ID:', result.lastInsertRowid);
@@ -42,7 +41,12 @@ function migrateEnvAdmin() {
 
 // Run migration if executed directly
 if (require.main === module) {
-  migrateEnvAdmin();
+  migrateEnvAdmin()
+    .then(() => process.exit(0))
+    .catch(err => {
+      console.error(err);
+      process.exit(1);
+    });
 }
 
 module.exports = migrateEnvAdmin;

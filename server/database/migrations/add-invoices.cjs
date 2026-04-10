@@ -4,7 +4,7 @@ const { db, DB_TYPE } = require('../connection.cjs');
  * Migration: Add invoice tables
  * Creates tables for managing invoices and line items
  */
-function addInvoiceTables() {
+async function addInvoiceTables() {
   try {
     // Skip for PostgreSQL (handled by migrate-to-postgres.cjs)
     if (DB_TYPE === 'postgres') {
@@ -14,15 +14,13 @@ function addInvoiceTables() {
     }
 
     // Check if invoices table already exists (SQLite only)
-    const invoicesTableExists = db.sqlite
-      .prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='invoices'")
-      .get();
+    const invoicesTableExists = await db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='invoices'").get();
 
     if (invoicesTableExists) {
       console.log('✅ invoices table already exists');
     } else {
       // Create invoices table
-      db.exec(`
+      await db.exec(`
         CREATE TABLE invoices (
           id INTEGER PRIMARY KEY AUTOINCREMENT,
           invoice_number TEXT UNIQUE NOT NULL,
@@ -47,7 +45,7 @@ function addInvoiceTables() {
       `);
 
       // Create indexes for invoices
-      db.exec(`
+      await db.exec(`
         CREATE INDEX idx_invoices_number ON invoices(invoice_number);
         CREATE INDEX idx_invoices_status ON invoices(status);
         CREATE INDEX idx_invoices_date ON invoices(issue_date DESC);
@@ -57,15 +55,13 @@ function addInvoiceTables() {
     }
 
     // Check if invoice_line_items table already exists (SQLite only)
-    const lineItemsTableExists = db.sqlite
-      .prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='invoice_line_items'")
-      .get();
+    const lineItemsTableExists = await db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='invoice_line_items'").get();
 
     if (lineItemsTableExists) {
       console.log('✅ invoice_line_items table already exists');
     } else {
       // Create invoice_line_items table
-      db.exec(`
+      await db.exec(`
         CREATE TABLE invoice_line_items (
           id INTEGER PRIMARY KEY AUTOINCREMENT,
           invoice_id INTEGER NOT NULL,
@@ -79,7 +75,7 @@ function addInvoiceTables() {
       `);
 
       // Create index for line items
-      db.exec(`
+      await db.exec(`
         CREATE INDEX idx_line_items_invoice ON invoice_line_items(invoice_id);
       `);
 
@@ -93,7 +89,12 @@ function addInvoiceTables() {
 
 // Run migration if executed directly
 if (require.main === module) {
-  addInvoiceTables();
+  addInvoiceTables()
+    .then(() => process.exit(0))
+    .catch(err => {
+      console.error(err);
+      process.exit(1);
+    });
 }
 
 module.exports = addInvoiceTables;

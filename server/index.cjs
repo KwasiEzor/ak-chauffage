@@ -199,9 +199,10 @@ async function start() {
     const addInvoiceTables = require('./database/migrations/add-invoices.cjs');
     const fixColumnNames = require('./database/migrations/fix-column-names.cjs');
     const fixSchemaMismatches = require('./database/migrations/fix-schema-mismatches.cjs');
-    migrateEnvAdmin();
-    addAnalyticsTable();
-    addInvoiceTables();
+    
+    await migrateEnvAdmin();
+    await addAnalyticsTable();
+    await addInvoiceTables();
     await fixColumnNames();
     await fixSchemaMismatches();
 

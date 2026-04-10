@@ -46,7 +46,7 @@ if (DB_TYPE === 'postgres') {
       let paramCount = 0;
       const pgSql = sql.replace(/\?/g, () => `$${++paramCount}`);
 
-      return {
+      const queryObj = {
         get(...args) {
           const params = Array.isArray(args[0]) ? args[0] : args;
           return pool.query(pgSql, params).then(res => res.rows[0] || null);
@@ -63,6 +63,11 @@ if (DB_TYPE === 'postgres') {
           }));
         }
       };
+
+      // Support both db.prepare(sql).all() and db.prepare(sql)(params).all()
+      const fn = (...args) => queryObj;
+      Object.assign(fn, queryObj);
+      return fn;
     },
 
     exec(sql) {

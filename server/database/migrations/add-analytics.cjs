@@ -4,7 +4,7 @@ const { db, DB_TYPE } = require('../connection.cjs');
  * Migration: Add visitor analytics table
  * Creates a table for tracking page views and visitor behavior
  */
-function addAnalyticsTable() {
+async function addAnalyticsTable() {
   try {
     // Skip for PostgreSQL (handled by migrate-to-postgres.cjs)
     if (DB_TYPE === 'postgres') {
@@ -13,9 +13,7 @@ function addAnalyticsTable() {
     }
 
     // Check if table already exists (SQLite only)
-    const tableExists = db.sqlite
-      .prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='visitor_analytics'")
-      .get();
+    const tableExists = await db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='visitor_analytics'").get();
 
     if (tableExists) {
       console.log('✅ visitor_analytics table already exists');
@@ -23,7 +21,7 @@ function addAnalyticsTable() {
     }
 
     // Create visitor_analytics table
-    db.exec(`
+    await db.exec(`
       CREATE TABLE visitor_analytics (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         session_id TEXT NOT NULL,
@@ -38,7 +36,7 @@ function addAnalyticsTable() {
     `);
 
     // Create indexes for better query performance
-    db.exec(`
+    await db.exec(`
       CREATE INDEX idx_analytics_created_at ON visitor_analytics(created_at DESC);
       CREATE INDEX idx_analytics_page_path ON visitor_analytics(page_path);
       CREATE INDEX idx_analytics_session ON visitor_analytics(session_id);
@@ -53,7 +51,12 @@ function addAnalyticsTable() {
 
 // Run migration if executed directly
 if (require.main === module) {
-  addAnalyticsTable();
+  addAnalyticsTable()
+    .then(() => process.exit(0))
+    .catch(err => {
+      console.error(err);
+      process.exit(1);
+    });
 }
 
 module.exports = addAnalyticsTable;
