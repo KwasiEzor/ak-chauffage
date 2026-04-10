@@ -123,6 +123,24 @@ function getCurrentTimestamp() {
 }
 
 /**
+ * Helper for date interval
+ */
+function getDateInterval(days) {
+  return DB_TYPE === 'postgres' 
+    ? `CURRENT_TIMESTAMP - INTERVAL '${days} days'` 
+    : `datetime('now', '-${days} days')`;
+}
+
+/**
+ * Helper for month truncation
+ */
+function getDateTruncMonth() {
+  return DB_TYPE === 'postgres' 
+    ? "DATE_TRUNC('month', CURRENT_DATE)" 
+    : "date('now', 'start of month')";
+}
+
+/**
  * Helper for auto-increment ID
  */
 function getAutoIncrement() {
@@ -134,5 +152,7 @@ module.exports = {
   DB_TYPE,
   getSQL,
   getCurrentTimestamp,
+  getDateInterval,
+  getDateTruncMonth,
   getAutoIncrement
 };

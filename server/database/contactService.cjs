@@ -1,4 +1,4 @@
-const { db } = require('./connection.cjs');
+const { db, getDateInterval, getDateTruncMonth } = require('./connection.cjs');
 
 /**
  * Contact Service
@@ -162,10 +162,11 @@ class ContactService {
     });
 
     // Today's contacts
+    const dateCast = db.type === 'postgres' ? 'created_at::date' : 'DATE(created_at)';
     const todayStmt = db.prepare(`
       SELECT COUNT(*) as count
       FROM contacts
-      WHERE DATE(created_at) = DATE('now')
+      WHERE ${dateCast} = CURRENT_DATE
     `);
     const todayResult = await todayStmt.get();
     stats.today = todayResult.count;
@@ -174,7 +175,7 @@ class ContactService {
     const weekStmt = db.prepare(`
       SELECT COUNT(*) as count
       FROM contacts
-      WHERE created_at >= DATE('now', '-7 days')
+      WHERE created_at >= ${getDateInterval(7)}
     `);
     const weekResult = await weekStmt.get();
     stats.thisWeek = weekResult.count;
@@ -183,7 +184,7 @@ class ContactService {
     const monthStmt = db.prepare(`
       SELECT COUNT(*) as count
       FROM contacts
-      WHERE created_at >= DATE('now', 'start of month')
+      WHERE created_at >= ${getDateTruncMonth()}
     `);
     const monthResult = await monthStmt.get();
     stats.thisMonth = monthResult.count;

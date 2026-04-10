@@ -1,4 +1,4 @@
-const { db } = require('./connection.cjs');
+const { db, DB_TYPE, getDateInterval } = require('./connection.cjs');
 
 /**
  * Visitor Analytics Service
@@ -64,7 +64,7 @@ class VisitorAnalyticsService {
       deviceBreakdown: [],
     };
 
-    const dateFilter = `created_at >= datetime('now', '-${days} days')`;
+    const dateFilter = `created_at >= ${getDateInterval(days)}`;
 
     // Total page views
     const totalStmt = db.prepare(`
@@ -84,14 +84,16 @@ class VisitorAnalyticsService {
     const uniqueResult = await uniqueStmt.get();
     stats.uniqueVisitors = uniqueResult.count;
 
+    const dateCast = DB_TYPE === 'postgres' ? 'created_at::date' : 'DATE(created_at)';
+
     // Daily views for time-series chart
     const dailyStmt = db.prepare(`
       SELECT
-        DATE(created_at) as date,
+        ${dateCast} as date,
         COUNT(*) as views
       FROM visitor_analytics
       WHERE ${dateFilter}
-      GROUP BY DATE(created_at)
+      GROUP BY ${dateCast}
       ORDER BY date ASC
     `);
     stats.dailyViews = await dailyStmt.all();

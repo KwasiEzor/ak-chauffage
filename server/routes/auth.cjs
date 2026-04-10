@@ -67,7 +67,7 @@ router.post('/login', async (req, res) => {
     // Log successful login (only if database admin)
     if (authSource === 'database' && admin.id) {
       try {
-        AuditLogService.log({
+        await AuditLogService.log({
           adminId: admin.id,
           action: 'login',
           entityType: 'auth',
@@ -240,10 +240,10 @@ router.put('/email', authMiddleware, async (req, res) => {
       });
     }
 
-    const updated = AdminService.updateEmail(req.user.id, email);
+    const updated = await AdminService.updateEmail(req.user.id, email);
 
     // Log email change
-    AuditLogService.log({
+    await AuditLogService.log({
       adminId: req.user.id,
       action: 'update_email',
       entityType: 'admin',

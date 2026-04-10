@@ -47,7 +47,7 @@ router.put('/smtp', authMiddleware, async (req, res) => {
     );
 
     // Log the change
-    AuditLogService.log({
+    await AuditLogService.log({
       adminId: req.user.id,
       action: 'update_smtp_config',
       entityType: 'system_settings',
@@ -103,7 +103,7 @@ router.post('/smtp/test', authMiddleware, async (req, res) => {
     await transporter.verify();
 
     // Log test
-    AuditLogService.log({
+    await AuditLogService.log({
       adminId: req.user.id,
       action: 'test_smtp_connection',
       entityType: 'system_settings',
@@ -122,7 +122,7 @@ router.post('/smtp/test', authMiddleware, async (req, res) => {
 
     // Log failed test
     try {
-      AuditLogService.log({
+      await AuditLogService.log({
         adminId: req.user.id,
         action: 'test_smtp_connection',
         entityType: 'system_settings',
