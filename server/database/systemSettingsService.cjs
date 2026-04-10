@@ -33,8 +33,8 @@ class SystemSettingsService {
   /**
    * Get setting by key
    */
-  static get(key) {
-    const setting = db.prepare('SELECT * FROM system_settings WHERE key = ?').get(key);
+  static async get(key) {
+    const setting = await db.prepare('SELECT * FROM system_settings WHERE key = ?').get(key);
 
     if (!setting) {
       return null;
@@ -56,8 +56,8 @@ class SystemSettingsService {
   /**
    * Get multiple settings by category
    */
-  static getByCategory(category) {
-    const settings = db.prepare('SELECT * FROM system_settings WHERE category = ?').all(category);
+  static async getByCategory(category) {
+    const settings = await db.prepare('SELECT * FROM system_settings WHERE category = ?').all(category);
 
     // Decrypt encrypted settings
     return settings.map(setting => {
@@ -75,8 +75,8 @@ class SystemSettingsService {
   /**
    * Get all settings
    */
-  static getAll() {
-    const settings = db.prepare('SELECT * FROM system_settings').all();
+  static async getAll() {
+    const settings = await db.prepare('SELECT * FROM system_settings').all();
 
     // Decrypt encrypted settings
     return settings.map(setting => {
@@ -94,7 +94,7 @@ class SystemSettingsService {
   /**
    * Set or update a setting
    */
-  static set(key, value, { encrypted = false, category = 'general', description = '', updatedBy = null } = {}) {
+  static async set(key, value, { encrypted = false, category = 'general', description = '', updatedBy = null } = {}) {
     // Encrypt if needed
     const finalValue = encrypted ? this.encrypt(value) : value;
 
@@ -110,17 +110,17 @@ class SystemSettingsService {
         updated_at = CURRENT_TIMESTAMP
     `);
 
-    stmt.run(key, finalValue, encrypted ? 1 : 0, category, description, updatedBy);
+    await stmt.run(key, finalValue, encrypted ? 1 : 0, category, description, updatedBy);
 
-    return this.get(key);
+    return await this.get(key);
   }
 
   /**
    * Delete a setting
    */
-  static delete(key) {
+  static async delete(key) {
     const stmt = db.prepare('DELETE FROM system_settings WHERE key = ?');
-    const result = stmt.run(key);
+    const result = await stmt.run(key);
     return result.changes > 0;
   }
 
@@ -128,12 +128,12 @@ class SystemSettingsService {
    * Get SMTP configuration
    * Falls back to .env if not set in database
    */
-  static getSMTPConfig() {
-    const host = this.get('smtp_host');
-    const port = this.get('smtp_port');
-    const user = this.get('smtp_user');
-    const pass = this.get('smtp_pass');
-    const from = this.get('smtp_from');
+  static async getSMTPConfig() {
+    const host = await this.get('smtp_host');
+    const port = await this.get('smtp_port');
+    const user = await this.get('smtp_user');
+    const pass = await this.get('smtp_pass');
+    const from = await this.get('smtp_from');
 
     // If all settings exist in DB, use them
     if (host && port && user && pass) {
@@ -161,14 +161,14 @@ class SystemSettingsService {
   /**
    * Update SMTP configuration
    */
-  static updateSMTPConfig({ host, port, user, pass, from }, updatedBy) {
-    this.set('smtp_host', host, { category: 'smtp', description: 'SMTP server host', updatedBy });
-    this.set('smtp_port', port.toString(), { category: 'smtp', description: 'SMTP server port', updatedBy });
-    this.set('smtp_user', user, { category: 'smtp', description: 'SMTP username', updatedBy });
-    this.set('smtp_pass', pass, { encrypted: true, category: 'smtp', description: 'SMTP password', updatedBy });
-    this.set('smtp_from', from, { category: 'smtp', description: 'Email from address', updatedBy });
+  static async updateSMTPConfig({ host, port, user, pass, from }, updatedBy) {
+    await this.set('smtp_host', host, { category: 'smtp', description: 'SMTP server host', updatedBy });
+    await this.set('smtp_port', port.toString(), { category: 'smtp', description: 'SMTP server port', updatedBy });
+    await this.set('smtp_user', user, { category: 'smtp', description: 'SMTP username', updatedBy });
+    await this.set('smtp_pass', pass, { encrypted: true, category: 'smtp', description: 'SMTP password', updatedBy });
+    await this.set('smtp_from', from, { category: 'smtp', description: 'Email from address', updatedBy });
 
-    return this.getSMTPConfig();
+    return await this.getSMTPConfig();
   }
 }
 
