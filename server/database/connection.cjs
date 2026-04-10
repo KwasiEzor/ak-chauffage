@@ -92,9 +92,18 @@ if (DB_TYPE === 'postgres') {
     prepare(sql) {
       const stmt = sqlite.prepare(sql);
       return {
-        get: stmt.get.bind(stmt),
-        all: stmt.all.bind(stmt),
-        run: stmt.run.bind(stmt)
+        get: async (...args) => {
+          const params = Array.isArray(args[0]) ? args[0] : args;
+          return stmt.get(...params);
+        },
+        all: async (...args) => {
+          const params = Array.isArray(args[0]) ? args[0] : args;
+          return stmt.all(...params);
+        },
+        run: async (...args) => {
+          const params = Array.isArray(args[0]) ? args[0] : args;
+          return stmt.run(...params);
+        }
       };
     },
 
@@ -126,9 +135,13 @@ function getCurrentTimestamp() {
  * Helper for date interval
  */
 function getDateInterval(days) {
+  const safeDays = Number(days);
+  if (isNaN(safeDays)) {
+    throw new Error('Invalid days parameter for getDateInterval');
+  }
   return DB_TYPE === 'postgres' 
-    ? `CURRENT_TIMESTAMP - INTERVAL '${days} days'` 
-    : `datetime('now', '-${days} days')`;
+    ? `CURRENT_TIMESTAMP - INTERVAL '${safeDays} days'` 
+    : `datetime('now', '-${safeDays} days')`;
 }
 
 /**

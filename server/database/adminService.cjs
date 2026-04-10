@@ -1,26 +1,28 @@
-const { db } = require('./connection.cjs');
+const { db, DB_TYPE } = require('./connection.cjs');
 const bcrypt = require('bcrypt');
+
+const ACTIVE_COL = DB_TYPE === 'postgres' ? 'is_active' : 'active';
 
 class AdminService {
   /**
    * Get admin by username
    */
   static async getByUsername(username) {
-    return await db.prepare('SELECT * FROM admins WHERE username = ? AND active = true').get(username);
+    return await db.prepare(`SELECT * FROM admins WHERE username = ? AND ${ACTIVE_COL} = true`).get(username);
   }
 
   /**
    * Get admin by ID
    */
   static async getById(id) {
-    return await db.prepare('SELECT id, username, email, role, active, last_login, created_at FROM admins WHERE id = ?').get(id);
+    return await db.prepare(`SELECT id, username, email, role, ${ACTIVE_COL} as active, last_login, created_at FROM admins WHERE id = ?`).get(id);
   }
 
   /**
    * Get all admins
    */
   static async getAll() {
-    return await db.prepare('SELECT id, username, email, role, active, last_login, created_at FROM admins ORDER BY created_at DESC').all();
+    return await db.prepare(`SELECT id, username, email, role, ${ACTIVE_COL} as active, last_login, created_at FROM admins ORDER BY created_at DESC`).all();
   }
 
   /**
@@ -130,7 +132,7 @@ class AdminService {
   static async deactivate(id) {
     const stmt = db.prepare(`
       UPDATE admins
-      SET active = false, updated_at = CURRENT_TIMESTAMP
+      SET ${ACTIVE_COL} = false, updated_at = CURRENT_TIMESTAMP
       WHERE id = ?
     `);
 
@@ -145,7 +147,7 @@ class AdminService {
   static async reactivate(id) {
     const stmt = db.prepare(`
       UPDATE admins
-      SET active = true, updated_at = CURRENT_TIMESTAMP
+      SET ${ACTIVE_COL} = true, updated_at = CURRENT_TIMESTAMP
       WHERE id = ?
     `);
 

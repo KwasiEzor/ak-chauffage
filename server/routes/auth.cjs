@@ -4,11 +4,20 @@ const jwt = require('jsonwebtoken');
 const authMiddleware = require('../middleware/auth.cjs');
 const AdminService = require('../database/adminService.cjs');
 const AuditLogService = require('../database/auditLogService.cjs');
-
 const router = express.Router();
 
 // Rate limiting storage (simple in-memory for development)
 const loginAttempts = new Map();
+
+// Periodic cleanup of loginAttempts to prevent memory leak
+setInterval(() => {
+  const now = Date.now();
+  for (const [ip, data] of loginAttempts.entries()) {
+    if (now > data.resetTime) {
+      loginAttempts.delete(ip);
+    }
+  }
+}, 15 * 60 * 1000);
 
 /**
  * POST /api/auth/login

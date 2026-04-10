@@ -39,7 +39,7 @@ router.post('/', async (req, res) => {
     // Save to database first
     let contact;
     try {
-      contact = ContactService.create({
+      contact = await ContactService.create({
         name,
         email,
         phone,
@@ -51,20 +51,27 @@ router.post('/', async (req, res) => {
       console.log('✅ Contact saved to database:', contact.id);
     } catch (dbError) {
       console.error('❌ Failed to save contact to database:', dbError);
-      // Continue anyway - email is still sent
     }
 
     // Send email to business owner
+    let emailSent = false;
     try {
       await sendContactEmail({ name, email, phone, service, message });
+      emailSent = true;
     } catch (emailError) {
-      console.error('Failed to send contact email:', emailError);
-      // Continue even if email fails - we still want to acknowledge the submission
+      console.error('❌ Failed to send contact email:', emailError);
+    }
+
+    // If both failed, return error
+    if (!contact && !emailSent) {
+      return res.status(500).json({ error: 'Une erreur est survenue lors de l\'envoi de votre message. Veuillez réessayer.' });
     }
 
     // Send auto-response to customer (optional, don't wait for it)
-    sendAutoResponse({ name, email })
-      .catch(err => console.warn('Auto-response failed:', err.message));
+    if (emailSent) {
+      sendAutoResponse({ name, email })
+        .catch(err => console.warn('Auto-response failed:', err.message));
+    }
 
     // Log submission for debugging
     console.log('✅ Contact form submission processed:', {

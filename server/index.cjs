@@ -10,6 +10,25 @@ const { ensureDataDir } = require('./utils/fileManager.cjs');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
+const { db } = require('./database/connection.cjs');
+
+// Graceful shutdown
+const gracefulShutdown = async () => {
+  console.log('🛑 Shutting down server gracefully...');
+  try {
+    if (db && db.close) {
+      await db.close();
+      console.log('✅ Database connection closed');
+    }
+    process.exit(0);
+  } catch (err) {
+    console.error('❌ Error during shutdown:', err);
+    process.exit(1);
+  }
+};
+
+process.on('SIGINT', gracefulShutdown);
+process.on('SIGTERM', gracefulShutdown);
 
 // Validate critical environment variables
 const requiredEnvVars = ['JWT_SECRET', 'ADMIN_USERNAME', 'ADMIN_PASSWORD_HASH'];
