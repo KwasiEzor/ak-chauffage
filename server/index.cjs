@@ -122,6 +122,10 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 // Cookie parsing
 app.use(cookieParser());
 
+// CSRF Protection
+const csrfMiddleware = require('./middleware/csrf.cjs');
+app.use(csrfMiddleware);
+
 // Analytics tracking middleware (before static files)
 const analyticsMiddleware = require('./middleware/analytics.cjs');
 app.use(analyticsMiddleware);

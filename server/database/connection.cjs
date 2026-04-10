@@ -69,6 +69,42 @@ if (DB_TYPE === 'postgres') {
       return pool.query(sql);
     },
 
+    async beginTransaction() {
+      const client = await pool.connect();
+      await client.query('BEGIN');
+      return {
+        prepare(sql) {
+          let paramCount = 0;
+          const pgSql = sql.replace(/\?/g, () => `$${++paramCount}`);
+          return {
+            get(...args) {
+              const params = Array.isArray(args[0]) ? args[0] : args;
+              return client.query(pgSql, params).then(res => res.rows[0] || null);
+            },
+            all(...args) {
+              const params = Array.isArray(args[0]) ? args[0] : args;
+              return client.query(pgSql, params).then(res => res.rows);
+            },
+            run(...args) {
+              const params = Array.isArray(args[0]) ? args[0] : args;
+              return client.query(pgSql, params).then(res => ({
+                changes: res.rowCount,
+                lastInsertRowid: res.rows[0]?.id || null
+              }));
+            }
+          };
+        },
+        async commit() {
+          await client.query('COMMIT');
+          client.release();
+        },
+        async rollback() {
+          await client.query('ROLLBACK');
+          client.release();
+        }
+      };
+    },
+
     close() {
       return pool.end();
     }
@@ -109,6 +145,35 @@ if (DB_TYPE === 'postgres') {
 
     exec(sql) {
       return sqlite.exec(sql);
+    },
+
+    async beginTransaction() {
+      sqlite.prepare('BEGIN').run();
+      return {
+        prepare(sql) {
+          const stmt = sqlite.prepare(sql);
+          return {
+            get: async (...args) => {
+              const params = Array.isArray(args[0]) ? args[0] : args;
+              return stmt.get(...params);
+            },
+            all: async (...args) => {
+              const params = Array.isArray(args[0]) ? args[0] : args;
+              return stmt.all(...params);
+            },
+            run: async (...args) => {
+              const params = Array.isArray(args[0]) ? args[0] : args;
+              return stmt.run(...params);
+            }
+          };
+        },
+        async commit() {
+          sqlite.prepare('COMMIT').run();
+        },
+        async rollback() {
+          sqlite.prepare('ROLLBACK').run();
+        }
+      };
     },
 
     close() {

@@ -9,12 +9,13 @@ class InvoiceService {
   /**
    * Generate next invoice number in format AK-YYYY-XXX
    */
-  static async generateInvoiceNumber() {
+  static async generateInvoiceNumber(tx = null) {
     const year = new Date().getFullYear();
     const prefix = `AK-${year}-`;
+    const connection = tx || db;
 
     // Get the last invoice number for this year
-    const lastInvoice = await db
+    const lastInvoice = await connection
       .prepare(`
         SELECT invoice_number
         FROM invoices
@@ -39,60 +40,73 @@ class InvoiceService {
    * Create a new invoice with line items (transaction-based)
    */
   static async create({ invoice, lineItems, createdBy }) {
-    // Generate invoice number
-    const invoiceNumber = await this.generateInvoiceNumber();
+    const tx = await db.beginTransaction();
+    try {
+      // Generate invoice number
+      const invoiceNumber = await this.generateInvoiceNumber(tx);
 
-    // Insert invoice
-    const insertInvoice = db.prepare(`
-      INSERT INTO invoices (
-        invoice_number, status, client_name, client_email, client_phone,
-        client_address, issue_date, due_date, paid_date, subtotal,
-        tax_rate, tax_amount, total, notes, created_by
-      )
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `);
+      // Insert invoice
+      const insertInvoice = tx.prepare(`
+        INSERT INTO invoices (
+          invoice_number, status, client_name, client_email, client_phone,
+          client_address, issue_date, due_date, paid_date, subtotal,
+          tax_rate, tax_amount, total, notes, created_by
+        )
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `);
 
-    const invoiceResult = await insertInvoice.run(
-      invoiceNumber,
-      invoice.status,
-      invoice.client_name,
-      invoice.client_email,
-      invoice.client_phone || null,
-      invoice.client_address || null,
-      invoice.issue_date,
-      invoice.due_date || null,
-      invoice.paid_date || null,
-      invoice.subtotal,
-      invoice.tax_rate,
-      invoice.tax_amount,
-      invoice.total,
-      invoice.notes || null,
-      createdBy
-    );
-
-    const invoiceId = invoiceResult.lastInsertRowid;
-
-    // Insert line items
-    const insertLineItem = db.prepare(`
-      INSERT INTO invoice_line_items (
-        invoice_id, description, quantity, unit_price, amount, line_order
-      )
-      VALUES (?, ?, ?, ?, ?, ?)
-    `);
-
-    for (let index = 0; index < lineItems.length; index++) {
-      const item = lineItems[index];
-      await insertLineItem.run(
-        invoiceId,
-        item.description,
-        item.quantity,
-        item.unit_price,
-        item.amount,
-        index
+      const invoiceResult = await insertInvoice.run(
+        invoiceNumber,
+        invoice.status,
+        invoice.client_name,
+        invoice.client_email,
+        invoice.client_phone || null,
+        invoice.client_address || null,
+        invoice.issue_date,
+        invoice.due_date || null,
+        invoice.paid_date || null,
+        invoice.subtotal,
+        invoice.tax_rate,
+        invoice.tax_amount,
+        invoice.total,
+        invoice.notes || null,
+        createdBy
       );
-    }
 
-    return await this.getById(invoiceId);
+      // Use the transaction-specific result or fetch ID manually if needed
+      // Postgres returns res.rows[0].id via the run() wrapper I added
+      const invoiceId = invoiceResult.lastInsertRowid;
+
+      if (!invoiceId && db.type === 'sqlite') {
+        // Better-sqlite3 .run() returns .lastInsertRowid on the result object directly
+      }
+
+      // Insert line items
+      const insertLineItem = tx.prepare(`
+        INSERT INTO invoice_line_items (
+          invoice_id, description, quantity, unit_price, amount, line_order
+        )
+        VALUES (?, ?, ?, ?, ?, ?)
+      `);
+
+      for (let index = 0; index < lineItems.length; index++) {
+        const item = lineItems[index];
+        await insertLineItem.run(
+          invoiceId,
+          item.description,
+          item.quantity,
+          item.unit_price,
+          item.amount,
+          index
+        );
+      }
+
+      await tx.commit();
+      return await this.getById(invoiceId);
+    } catch (error) {
+      await tx.rollback();
+      throw error;
+    }
   }
 
   /**

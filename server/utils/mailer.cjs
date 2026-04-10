@@ -12,26 +12,37 @@ if (USE_RESEND) {
 }
 
 /**
- * Email transporter configuration
- * Uses SMTP credentials from database (if set) or falls back to environment variables
+ * Verify transporter connection
+ * @param {Object} transporter - Nodemailer transporter
+ * @returns {Promise<boolean>}
  */
-const createTransporter = () => {
-  // Get SMTP config (database or .env fallback)
+async function verifyTransporter(transporter) {
+  try {
+    if (!transporter) return false;
+    await transporter.verify();
+    return true;
+  } catch (error) {
+    console.error('❌ SMTP verification failed:', error.message);
+    return false;
+  }
+}
+
+/**
+ * Get email transporter with configuration
+ */
+const getTransporter = () => {
   const smtpConfig = SystemSettingsService.getSMTPConfig();
 
-  // Check if email is configured
   if (!smtpConfig.host || !smtpConfig.user) {
-    console.warn('⚠️  Email not configured. Contact form submissions will be logged but not sent.');
     return null;
   }
 
   const config = {
     host: smtpConfig.host,
     port: smtpConfig.port,
-    secure: smtpConfig.port === 465, // true for 465, false for other ports
+    secure: smtpConfig.port === 465,
   };
 
-  // Only add auth if password is provided (Mailpit doesn't need auth)
   if (smtpConfig.pass && smtpConfig.pass !== 'test') {
     config.auth = {
       user: smtpConfig.user,
@@ -39,9 +50,7 @@ const createTransporter = () => {
     };
   }
 
-  console.log(`📧 Using SMTP config from: ${smtpConfig.source}`);
-
-  return nodemailer.createTransporter(config);
+  return nodemailer.createTransport(config);
 };
 
 /**
@@ -50,9 +59,9 @@ const createTransporter = () => {
  * @returns {Promise<Object>} - Send result
  */
 async function sendEmail(mailOptions) {
+  // 1. Try Resend if configured
   if (USE_RESEND) {
     try {
-      // Send via Resend
       const result = await resendClient.emails.send({
         from: mailOptions.from || 'AK CHAUFFAGE <noreply@ak-chauffage.be>',
         to: mailOptions.to,
@@ -65,23 +74,31 @@ async function sendEmail(mailOptions) {
           content: att.content,
         }))
       });
-      console.log('✅ Email sent via Resend:', result.id);
-      return { success: true, messageId: result.id, service: 'resend' };
+      
+      if (result.error) throw new Error(result.error.message);
+      
+      console.log('✅ Email sent via Resend:', result.data?.id);
+      return { success: true, messageId: result.data?.id, service: 'resend' };
     } catch (error) {
       console.error('❌ Resend failed, falling back to SMTP:', error.message);
-      // Fall through to Nodemailer
+      // Fall through to SMTP
     }
   }
 
-  // Use Nodemailer (fallback or default)
-  const transporter = createTransporter();
+  // 2. Try SMTP
+  const transporter = getTransporter();
   if (!transporter) {
-    throw new Error('Email service not configured');
+    throw new Error('Email service not configured (SMTP host/user missing)');
   }
 
-  const info = await transporter.sendMail(mailOptions);
-  console.log('✅ Email sent via SMTP:', info.messageId);
-  return { success: true, messageId: info.messageId, service: 'nodemailer' };
+  try {
+    const info = await transporter.sendMail(mailOptions);
+    console.log('✅ Email sent via SMTP:', info.messageId);
+    return { success: true, messageId: info.messageId, service: 'nodemailer' };
+  } catch (error) {
+    console.error('❌ SMTP send failed:', error.message);
+    throw error;
+  }
 }
 
 /**
@@ -92,27 +109,16 @@ async function sendEmail(mailOptions) {
 async function sendContactEmail(formData) {
   const { name, email, phone, service, message } = formData;
 
-  const transporter = createTransporter();
-
-  // If email not configured, just log
-  if (!transporter) {
-    console.log('📧 Contact form submission (email not configured):', {
-      name,
-      email,
-      phone,
-      service,
-      message: message?.substring(0, 50) + '...',
-    });
-    return true; // Return true so form doesn't fail
-  }
-
   const smtpConfig = SystemSettingsService.getSMTPConfig();
   const contactEmail = process.env.CONTACT_EMAIL || smtpConfig.from || smtpConfig.user;
+  
+  // Use a fallback if still not found to prevent failure
+  const fromEmail = smtpConfig.from || smtpConfig.user || 'noreply@ak-chauffage.be';
 
   // Email to business owner
   const mailOptions = {
-    from: `"AK CHAUFFAGE Website" <${smtpConfig.from || smtpConfig.user}>`,
-    to: contactEmail,
+    from: `"AK CHAUFFAGE Website" <${fromEmail}>`,
+    to: contactEmail || 'contact@ak-chauffage.be',
     replyTo: email,
     subject: `🔥 Nouveau contact: ${service}`,
     html: `
@@ -197,7 +203,7 @@ Reçu le ${new Date().toLocaleString('fr-BE')}
     await sendEmail(mailOptions);
     return true;
   } catch (error) {
-    console.error('❌ Email sending failed:', error.message);
+    console.error('❌ sendContactEmail failed:', error.message);
     throw error;
   }
 }
@@ -210,13 +216,11 @@ Reçu le ${new Date().toLocaleString('fr-BE')}
 async function sendAutoResponse(formData) {
   const { name, email } = formData;
 
-  const transporter = createTransporter();
-  if (!transporter) return true;
-
   const smtpConfig = SystemSettingsService.getSMTPConfig();
+  const fromEmail = smtpConfig.from || smtpConfig.user || 'noreply@ak-chauffage.be';
 
   const mailOptions = {
-    from: `"AK CHAUFFAGE" <${smtpConfig.from || smtpConfig.user}>`,
+    from: `"AK CHAUFFAGE" <${fromEmail}>`,
     to: email,
     subject: 'Nous avons bien reçu votre message - AK CHAUFFAGE',
     html: `
@@ -313,22 +317,12 @@ www.ak-chauffage.be
  * @returns {Promise<boolean>} - Success status
  */
 async function sendInvoiceEmail({ invoice, pdfBuffer, clientEmail }) {
-  const transporter = createTransporter();
-
-  // If email not configured, just log
-  if (!transporter) {
-    console.log('📧 Invoice email (email not configured):', {
-      invoiceNumber: invoice.invoice_number,
-      clientEmail,
-    });
-    return false;
-  }
-
   const smtpConfig = SystemSettingsService.getSMTPConfig();
+  const fromEmail = smtpConfig.from || smtpConfig.user || 'noreply@ak-chauffage.be';
 
   // Email to client with invoice PDF
   const mailOptions = {
-    from: `"AK CHAUFFAGE" <${smtpConfig.from || smtpConfig.user}>`,
+    from: `"AK CHAUFFAGE" <${fromEmail}>`,
     to: clientEmail,
     subject: `Facture ${invoice.invoice_number} - AK CHAUFFAGE`,
     html: `
@@ -451,4 +445,5 @@ module.exports = {
   sendContactEmail,
   sendAutoResponse,
   sendInvoiceEmail,
+  verifyTransporter,
 };

@@ -9,9 +9,18 @@ const API_URL = 'http://localhost:3001/api';
 
 async function getAuthToken() {
   try {
+    // First, get a CSRF token
+    const initialResponse = await fetch(`${API_URL}/content`);
+    const cookies = initialResponse.headers.get('set-cookie');
+    const csrfToken = cookies?.match(/XSRF-TOKEN=([^;]+)/)?.[1];
+
     const response = await fetch(`${API_URL}/auth/login`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 
+        'Content-Type': 'application/json',
+        'X-CSRF-Token': csrfToken || '',
+        'Cookie': `XSRF-TOKEN=${csrfToken}`
+      },
       body: JSON.stringify({
         username: 'admin',
         password: 'admin',

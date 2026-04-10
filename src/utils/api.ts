@@ -26,20 +26,50 @@ export function removeToken(): void {
 }
 
 /**
- * Fetch wrapper with auth token
+ * Get CSRF token from cookie
+ */
+function getCsrfToken(): string | null {
+  const name = 'XSRF-TOKEN=';
+  const decodedCookie = decodeURIComponent(document.cookie);
+  const ca = decodedCookie.split(';');
+  for (let i = 0; i < ca.length; i++) {
+    let c = ca[i];
+    while (c.charAt(0) === ' ') {
+      c = c.substring(1);
+    }
+    if (c.indexOf(name) === 0) {
+      return c.substring(name.length, c.length);
+    }
+  }
+  return null;
+}
+
+/**
+ * Fetch wrapper with auth token and CSRF protection
  */
 async function fetchWithAuth(
   endpoint: string,
   options: RequestInit = {}
 ): Promise<Response> {
   const token = getToken();
-  const headers: HeadersInit = {
-    'Content-Type': 'application/json',
-    ...options.headers,
+  const csrfToken = getCsrfToken();
+  const headers: Record<string, string> = {
+    ...((options.headers as Record<string, string>) || {}),
   };
+
+  // Only set Content-Type if body is not FormData (which sets its own boundary)
+  if (!(options.body instanceof FormData)) {
+    headers['Content-Type'] = 'application/json';
+  }
 
   if (token) {
     headers['Authorization'] = `Bearer ${token}`;
+  }
+
+  // Add CSRF token for state-changing requests
+  const unsafeMethods = ['POST', 'PUT', 'DELETE', 'PATCH'];
+  if (csrfToken && unsafeMethods.includes(options.method || 'GET')) {
+    headers['X-CSRF-Token'] = csrfToken;
   }
 
   const response = await fetch(`${API_BASE_URL}${endpoint}`, {
@@ -168,12 +198,17 @@ export const adminApi = {
 
   async uploadImage(file: File) {
     const token = getToken();
+    const csrfToken = getCsrfToken();
     const formData = new FormData();
     formData.append('image', file);
 
+    const headers: Record<string, string> = {};
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+    if (csrfToken) headers['X-CSRF-Token'] = csrfToken;
+
     const response = await fetch(`${API_BASE_URL}/media/upload`, {
       method: 'POST',
-      headers: token ? { Authorization: `Bearer ${token}` } : {},
+      headers,
       body: formData,
     });
     return handleResponse(response);
