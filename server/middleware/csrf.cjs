@@ -19,10 +19,12 @@ const generateToken = () => {
  * CSRF Middleware
  */
 const csrfMiddleware = (req, res, next) => {
-  // 1. Skip check for safe methods
+  // 1. Skip check for safe methods or login route
   const safeMethods = ['GET', 'HEAD', 'OPTIONS'];
-  if (safeMethods.includes(req.method)) {
-    // For safe methods, just ensure the cookie exists
+  const excludedRoutes = ['/api/auth/login', '/api/auth/logout'];
+  
+  if (safeMethods.includes(req.method) || excludedRoutes.includes(req.originalUrl)) {
+    // For safe methods or excluded routes, just ensure the cookie exists if missing
     if (!req.cookies || !req.cookies[SECURITY.CSRF_COOKIE_NAME]) {
       const token = generateToken();
       res.cookie(SECURITY.CSRF_COOKIE_NAME, token, {
