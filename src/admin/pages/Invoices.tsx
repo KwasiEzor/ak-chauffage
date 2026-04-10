@@ -3,10 +3,8 @@ import { Link } from 'react-router-dom';
 import { adminApi } from '../../utils/api';
 import { Receipt, Plus, Download, Trash2, Search, Filter, AlertCircle } from 'lucide-react';
 import type { InvoiceListItem, InvoiceStats } from '../../types/invoice';
-import { useContent } from '../../contexts/ContentContext';
 
 export default function Invoices() {
-  const { settings } = useContent();
   const [invoices, setInvoices] = useState<InvoiceListItem[]>([]);
   const [stats, setStats] = useState<InvoiceStats | null>(null);
   const [loading, setLoading] = useState(true);
@@ -53,10 +51,15 @@ export default function Invoices() {
   const handleDownloadPDF = async (id: number) => {
     try {
       const invoice = await adminApi.getInvoice(id);
-      if (settings) {
-        const { generateInvoicePDF } = await import('../../utils/pdfGenerator');
-        generateInvoicePDF(invoice, settings);
-      }
+      const blob = await adminApi.downloadInvoicePdf(id);
+      const downloadUrl = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = downloadUrl;
+      link.download = `${invoice.invoice_number}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(downloadUrl);
     } catch (err) {
       alert('Failed to generate PDF');
     }

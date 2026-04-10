@@ -1,5 +1,6 @@
 const nodemailer = require('nodemailer');
 const SystemSettingsService = require('../database/systemSettingsService.cjs');
+const { EMAIL } = require('../config/constants.cjs');
 
 // Check for Resend API key
 const USE_RESEND = !!process.env.RESEND_API_KEY;
@@ -111,9 +112,7 @@ async function sendContactEmail(formData) {
 
   const smtpConfig = SystemSettingsService.getSMTPConfig();
   const contactEmail = EMAIL.CONTACT_RECIPIENT || smtpConfig.from || smtpConfig.user;
-  
-  // Use a fallback if still not found to prevent failure
-  const fromEmail = smtpConfig.from || smtpConfig.user || EMAIL.DEFAULT_FROM;
+  const fromEmail = smtpConfig.from || smtpConfig.user || 'noreply@ak-chauffage.be';
 
   // Email to business owner
   const mailOptions = {

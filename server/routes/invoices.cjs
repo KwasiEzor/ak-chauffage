@@ -47,6 +47,34 @@ router.get('/stats', async (req, res) => {
 });
 
 /**
+ * GET /api/invoices/:id/pdf
+ * Download a single invoice as PDF
+ */
+router.get('/:id/pdf', async (req, res) => {
+  try {
+    const invoice = await InvoiceService.getById(req.params.id);
+
+    if (!invoice) {
+      return res.status(404).json({ error: ERRORS.INVOICE.NOT_FOUND });
+    }
+
+    const pdfBuffer = await generateInvoicePDF(invoice);
+    const safeInvoiceNumber = (invoice.invoice_number || `invoice-${invoice.id}`)
+      .replace(/[^a-zA-Z0-9-_]/g, '-');
+
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader(
+      'Content-Disposition',
+      `attachment; filename="${safeInvoiceNumber}.pdf"`
+    );
+    res.send(pdfBuffer);
+  } catch (error) {
+    console.error('Error generating invoice PDF:', error);
+    res.status(500).json({ error: ERRORS.INVOICE.SEND_FAILED });
+  }
+});
+
+/**
  * GET /api/invoices/:id
  * Get a single invoice with line items
  */

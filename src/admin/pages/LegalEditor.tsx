@@ -1,6 +1,15 @@
 import { useState, useEffect } from 'react';
 import { adminApi } from '../../utils/api';
-import { Save, AlertCircle, CheckCircle2, Plus, FileText } from 'lucide-react';
+import {
+  Save,
+  AlertCircle,
+  CheckCircle2,
+  Plus,
+  FileText,
+  ChevronUp,
+  ChevronDown,
+  X,
+} from 'lucide-react';
 import type { LegalPage } from '../../types/gdpr';
 
 export default function LegalEditor() {

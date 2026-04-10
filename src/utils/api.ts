@@ -417,6 +417,21 @@ export const adminApi = {
     });
     return handleResponse(response);
   },
+
+  async downloadInvoicePdf(id: number) {
+    const response = await fetchWithAuth(`/invoices/${id}/pdf`, {
+      skipJsonContentType: true,
+    });
+
+    if (!response.ok) {
+      const error: APIError = await response.json().catch(() => ({
+        error: 'An unexpected error occurred',
+      }));
+      throw new Error(error.error || `HTTP ${response.status}`);
+    }
+
+    return response.blob();
+  },
 };
 
 export default api;

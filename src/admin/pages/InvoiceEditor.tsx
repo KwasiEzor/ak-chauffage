@@ -3,12 +3,10 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { adminApi } from '../../utils/api';
 import { Save, Plus, X, Download, ArrowLeft, CheckCircle2, AlertCircle } from 'lucide-react';
 import type { Invoice, InvoiceLineItem } from '../../types/invoice';
-import { useContent } from '../../contexts/ContentContext';
 
 export default function InvoiceEditor() {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
-  const { settings } = useContent();
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
@@ -197,19 +195,21 @@ export default function InvoiceEditor() {
   };
 
   const handleDownloadPDF = async () => {
-    if (!invoice.invoice_number) {
+    if (!invoice.id || !invoice.invoice_number) {
       setMessage({ type: 'error', text: 'Please save the invoice before downloading PDF' });
       return;
     }
 
-    if (!settings) {
-      setMessage({ type: 'error', text: 'Settings not loaded' });
-      return;
-    }
-
     try {
-      const { generateInvoicePDF } = await import('../../utils/pdfGenerator');
-      generateInvoicePDF(invoice, settings);
+      const blob = await adminApi.downloadInvoicePdf(invoice.id);
+      const downloadUrl = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = downloadUrl;
+      link.download = `${invoice.invoice_number}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(downloadUrl);
       setMessage({ type: 'success', text: 'PDF downloaded successfully!' });
     } catch (error) {
       setMessage({
