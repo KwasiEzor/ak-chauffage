@@ -9,7 +9,7 @@ class VisitorAnalyticsService {
   /**
    * Track a page view
    */
-  static track({ sessionId, pagePath, referrer, ipAddress, userAgent }) {
+  static async track({ sessionId, pagePath, referrer, ipAddress, userAgent }) {
     const deviceType = this.detectDeviceType(userAgent);
 
     const stmt = db.prepare(`
@@ -17,7 +17,7 @@ class VisitorAnalyticsService {
       VALUES (?, ?, ?, ?, ?, ?)
     `);
 
-    const result = stmt.run(sessionId, pagePath, referrer || null, ipAddress, userAgent, deviceType);
+    const result = await stmt.run(sessionId, pagePath, referrer || null, ipAddress, userAgent, deviceType);
 
     return {
       id: result.lastInsertRowid,
@@ -54,7 +54,7 @@ class VisitorAnalyticsService {
   /**
    * Get analytics statistics for a given time range
    */
-  static getStats(days = 7) {
+  static async getStats(days = 7) {
     const stats = {
       totalPageViews: 0,
       uniqueVisitors: 0,
@@ -72,7 +72,8 @@ class VisitorAnalyticsService {
       FROM visitor_analytics
       WHERE ${dateFilter}
     `);
-    stats.totalPageViews = totalStmt.get().count;
+    const totalResult = await totalStmt.get();
+    stats.totalPageViews = totalResult.count;
 
     // Unique visitors (by session_id)
     const uniqueStmt = db.prepare(`
@@ -80,7 +81,8 @@ class VisitorAnalyticsService {
       FROM visitor_analytics
       WHERE ${dateFilter}
     `);
-    stats.uniqueVisitors = uniqueStmt.get().count;
+    const uniqueResult = await uniqueStmt.get();
+    stats.uniqueVisitors = uniqueResult.count;
 
     // Daily views for time-series chart
     const dailyStmt = db.prepare(`
@@ -92,7 +94,7 @@ class VisitorAnalyticsService {
       GROUP BY DATE(created_at)
       ORDER BY date ASC
     `);
-    stats.dailyViews = dailyStmt.all();
+    stats.dailyViews = await dailyStmt.all();
 
     // Popular pages (top 10)
     const pagesStmt = db.prepare(`
@@ -105,7 +107,7 @@ class VisitorAnalyticsService {
       ORDER BY views DESC
       LIMIT 10
     `);
-    stats.popularPages = pagesStmt.all();
+    stats.popularPages = await pagesStmt.all();
 
     // Traffic sources categorization
     const sourcesStmt = db.prepare(`
@@ -113,7 +115,7 @@ class VisitorAnalyticsService {
       FROM visitor_analytics
       WHERE ${dateFilter}
     `);
-    const allReferrers = sourcesStmt.all();
+    const allReferrers = await sourcesStmt.all();
 
     const sourceCategories = {
       Direct: 0,
@@ -152,7 +154,8 @@ class VisitorAnalyticsService {
       GROUP BY device_type
       ORDER BY count DESC
     `);
-    stats.deviceBreakdown = devicesStmt.all().map(({ device_type, count }) => ({
+    const deviceResults = await devicesStmt.all();
+    stats.deviceBreakdown = deviceResults.map(({ device_type, count }) => ({
       name: device_type.charAt(0).toUpperCase() + device_type.slice(1),
       value: count,
     }));

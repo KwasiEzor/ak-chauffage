@@ -25,7 +25,7 @@ function analyticsMiddleware(req, res, next) {
   }
 
   // Track in background (non-blocking)
-  setImmediate(() => {
+  setImmediate(async () => {
     try {
       // Get or create session ID
       let sessionId = req.cookies?.analytics_session;
@@ -42,7 +42,7 @@ function analyticsMiddleware(req, res, next) {
       }
 
       // Track the page view
-      VisitorAnalyticsService.track({
+      await VisitorAnalyticsService.track({
         sessionId,
         pagePath: req.path,
         referrer: req.get('Referer'),

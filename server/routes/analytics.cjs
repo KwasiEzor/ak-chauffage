@@ -8,7 +8,7 @@ const router = express.Router();
  * GET /api/analytics/stats
  * Get visitor analytics statistics
  */
-router.get('/stats', authMiddleware, (req, res) => {
+router.get('/stats', authMiddleware, async (req, res) => {
   try {
     const { days } = req.query;
 
@@ -18,7 +18,7 @@ router.get('/stats', authMiddleware, (req, res) => {
       return res.status(400).json({ error: 'Days must be between 1 and 365' });
     }
 
-    const stats = VisitorAnalyticsService.getStats(daysInt);
+    const stats = await VisitorAnalyticsService.getStats(daysInt);
     res.json(stats);
   } catch (error) {
     console.error('Error fetching analytics:', error);
