@@ -9,12 +9,12 @@ class InvoiceService {
   /**
    * Generate next invoice number in format AK-YYYY-XXX
    */
-  static generateInvoiceNumber() {
+  static async generateInvoiceNumber() {
     const year = new Date().getFullYear();
     const prefix = `AK-${year}-`;
 
     // Get the last invoice number for this year
-    const lastInvoice = db
+    const lastInvoice = await db
       .prepare(`
         SELECT invoice_number
         FROM invoices
@@ -38,73 +38,69 @@ class InvoiceService {
   /**
    * Create a new invoice with line items (transaction-based)
    */
-  static create({ invoice, lineItems, createdBy }) {
-    const createTransaction = db.transaction((invoiceData, items, adminId) => {
-      // Generate invoice number
-      const invoiceNumber = this.generateInvoiceNumber();
+  static async create({ invoice, lineItems, createdBy }) {
+    // Generate invoice number
+    const invoiceNumber = await this.generateInvoiceNumber();
 
-      // Insert invoice
-      const insertInvoice = db.prepare(`
-        INSERT INTO invoices (
-          invoice_number, status, client_name, client_email, client_phone,
-          client_address, issue_date, due_date, paid_date, subtotal,
-          tax_rate, tax_amount, total, notes, created_by
-        )
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-      `);
+    // Insert invoice
+    const insertInvoice = db.prepare(`
+      INSERT INTO invoices (
+        invoice_number, status, client_name, client_email, client_phone,
+        client_address, issue_date, due_date, paid_date, subtotal,
+        tax_rate, tax_amount, total, notes, created_by
+      )
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `);
 
-      const invoiceResult = insertInvoice.run(
-        invoiceNumber,
-        invoiceData.status,
-        invoiceData.client_name,
-        invoiceData.client_email,
-        invoiceData.client_phone || null,
-        invoiceData.client_address || null,
-        invoiceData.issue_date,
-        invoiceData.due_date || null,
-        invoiceData.paid_date || null,
-        invoiceData.subtotal,
-        invoiceData.tax_rate,
-        invoiceData.tax_amount,
-        invoiceData.total,
-        invoiceData.notes || null,
-        adminId
+    const invoiceResult = await insertInvoice.run(
+      invoiceNumber,
+      invoice.status,
+      invoice.client_name,
+      invoice.client_email,
+      invoice.client_phone || null,
+      invoice.client_address || null,
+      invoice.issue_date,
+      invoice.due_date || null,
+      invoice.paid_date || null,
+      invoice.subtotal,
+      invoice.tax_rate,
+      invoice.tax_amount,
+      invoice.total,
+      invoice.notes || null,
+      createdBy
+    );
+
+    const invoiceId = invoiceResult.lastInsertRowid;
+
+    // Insert line items
+    const insertLineItem = db.prepare(`
+      INSERT INTO invoice_line_items (
+        invoice_id, description, quantity, unit_price, amount, line_order
+      )
+      VALUES (?, ?, ?, ?, ?, ?)
+    `);
+
+    for (let index = 0; index < lineItems.length; index++) {
+      const item = lineItems[index];
+      await insertLineItem.run(
+        invoiceId,
+        item.description,
+        item.quantity,
+        item.unit_price,
+        item.amount,
+        index
       );
+    }
 
-      const invoiceId = invoiceResult.lastInsertRowid;
-
-      // Insert line items
-      const insertLineItem = db.prepare(`
-        INSERT INTO invoice_line_items (
-          invoice_id, description, quantity, unit_price, amount, line_order
-        )
-        VALUES (?, ?, ?, ?, ?, ?)
-      `);
-
-      items.forEach((item, index) => {
-        insertLineItem.run(
-          invoiceId,
-          item.description,
-          item.quantity,
-          item.unit_price,
-          item.amount,
-          index
-        );
-      });
-
-      return invoiceId;
-    });
-
-    const invoiceId = createTransaction(invoice, lineItems, createdBy);
-    return this.getById(invoiceId);
+    return await this.getById(invoiceId);
   }
 
   /**
    * Get invoice by ID with line items
    */
-  static getById(id) {
+  static async getById(id) {
     // Get invoice
-    const invoice = db
+    const invoice = await db
       .prepare('SELECT * FROM invoices WHERE id = ?')
       .get(id);
 
@@ -113,7 +109,7 @@ class InvoiceService {
     }
 
     // Get line items
-    const lineItems = db
+    const lineItems = await db
       .prepare('SELECT * FROM invoice_line_items WHERE invoice_id = ? ORDER BY line_order')
       .all(id);
 
@@ -126,7 +122,7 @@ class InvoiceService {
   /**
    * Get all invoices with optional filters
    */
-  static getAll({ status, search, limit = 50, offset = 0 } = {}) {
+  static async getAll({ status, search, limit = 50, offset = 0 } = {}) {
     let query = 'SELECT * FROM invoices WHERE 1=1';
     const params = [];
 
@@ -151,7 +147,7 @@ class InvoiceService {
     params.push(limit, offset);
 
     const stmt = db.prepare(query);
-    const invoices = stmt.all(...params);
+    const invoices = await stmt.all(...params);
 
     // Get total count for pagination
     let countQuery = 'SELECT COUNT(*) as total FROM invoices WHERE 1=1';
@@ -169,7 +165,7 @@ class InvoiceService {
     }
 
     const countStmt = db.prepare(countQuery);
-    const { total } = countStmt.get(...countParams);
+    const { total } = await countStmt.get(...countParams);
 
     return {
       invoices,
@@ -182,7 +178,7 @@ class InvoiceService {
   /**
    * Update invoice status
    */
-  static updateStatus(id, status, paidDate = null) {
+  static async updateStatus(id, status, paidDate = null) {
     const updates = ['status = ?', 'updated_at = CURRENT_TIMESTAMP'];
     const params = [status];
 
@@ -195,24 +191,24 @@ class InvoiceService {
     params.push(id);
 
     const stmt = db.prepare(query);
-    stmt.run(...params);
+    await stmt.run(...params);
 
-    return this.getById(id);
+    return await this.getById(id);
   }
 
   /**
    * Delete an invoice (cascades to line items)
    */
-  static delete(id) {
+  static async delete(id) {
     const stmt = db.prepare('DELETE FROM invoices WHERE id = ?');
-    const result = stmt.run(id);
+    const result = await stmt.run(id);
     return result.changes > 0;
   }
 
   /**
    * Get invoice statistics
    */
-  static getStats() {
+  static async getStats() {
     const stats = {
       total: 0,
       draft: 0,
@@ -231,7 +227,7 @@ class InvoiceService {
       GROUP BY status
     `);
 
-    const statusCounts = statusStmt.all();
+    const statusCounts = await statusStmt.all();
     statusCounts.forEach(({ status, count, revenue }) => {
       stats[status] = count;
       stats.total += count;
@@ -249,7 +245,8 @@ class InvoiceService {
       FROM invoices
       WHERE status != 'cancelled'
     `);
-    stats.totalRevenue = totalRevenueStmt.get().total || 0;
+    const totalResult = await totalRevenueStmt.get();
+    stats.totalRevenue = totalResult.total || 0;
 
     return stats;
   }

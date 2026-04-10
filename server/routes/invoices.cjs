@@ -13,11 +13,11 @@ router.use(authMiddleware);
  * GET /api/invoices
  * Get all invoices (with filters and pagination)
  */
-router.get('/', (req, res) => {
+router.get('/', async (req, res) => {
   try {
     const { status, search, limit, offset } = req.query;
 
-    const result = InvoiceService.getAll({
+    const result = await InvoiceService.getAll({
       status,
       search,
       limit: limit ? parseInt(limit) : 50,
@@ -35,9 +35,9 @@ router.get('/', (req, res) => {
  * GET /api/invoices/stats
  * Get invoice statistics
  */
-router.get('/stats', (req, res) => {
+router.get('/stats', async (req, res) => {
   try {
-    const stats = InvoiceService.getStats();
+    const stats = await InvoiceService.getStats();
     res.json(stats);
   } catch (error) {
     console.error('Error fetching invoice stats:', error);
@@ -49,9 +49,9 @@ router.get('/stats', (req, res) => {
  * GET /api/invoices/:id
  * Get a single invoice with line items
  */
-router.get('/:id', (req, res) => {
+router.get('/:id', async (req, res) => {
   try {
-    const invoice = InvoiceService.getById(req.params.id);
+    const invoice = await InvoiceService.getById(req.params.id);
 
     if (!invoice) {
       return res.status(404).json({ error: 'Invoice not found' });
@@ -68,7 +68,7 @@ router.get('/:id', (req, res) => {
  * POST /api/invoices
  * Create a new invoice
  */
-router.post('/', (req, res) => {
+router.post('/', async (req, res) => {
   try {
     const { invoice, lineItems } = req.body;
 
@@ -82,7 +82,7 @@ router.post('/', (req, res) => {
     }
 
     // Create invoice with current admin user
-    const createdInvoice = InvoiceService.create({
+    const createdInvoice = await InvoiceService.create({
       invoice,
       lineItems,
       createdBy: req.user.id, // From auth middleware
@@ -99,7 +99,7 @@ router.post('/', (req, res) => {
  * PATCH /api/invoices/:id/status
  * Update invoice status
  */
-router.patch('/:id/status', (req, res) => {
+router.patch('/:id/status', async (req, res) => {
   try {
     const { status, paidDate } = req.body;
 
@@ -109,7 +109,7 @@ router.patch('/:id/status', (req, res) => {
       return res.status(400).json({ error: 'Invalid status' });
     }
 
-    const invoice = InvoiceService.updateStatus(req.params.id, status, paidDate);
+    const invoice = await InvoiceService.updateStatus(req.params.id, status, paidDate);
 
     if (!invoice) {
       return res.status(404).json({ error: 'Invoice not found' });
@@ -129,7 +129,7 @@ router.patch('/:id/status', (req, res) => {
 router.post('/:id/send', async (req, res) => {
   try {
     // Get invoice with line items
-    const invoice = InvoiceService.getById(req.params.id);
+    const invoice = await InvoiceService.getById(req.params.id);
 
     if (!invoice) {
       return res.status(404).json({ error: 'Invoice not found' });
@@ -154,7 +154,7 @@ router.post('/:id/send', async (req, res) => {
 
     // Update invoice status to 'sent' if it was 'draft'
     if (invoice.status === 'draft') {
-      InvoiceService.updateStatus(req.params.id, 'sent');
+      await InvoiceService.updateStatus(req.params.id, 'sent');
     }
 
     res.json({
@@ -175,9 +175,9 @@ router.post('/:id/send', async (req, res) => {
  * DELETE /api/invoices/:id
  * Delete an invoice
  */
-router.delete('/:id', (req, res) => {
+router.delete('/:id', async (req, res) => {
   try {
-    const success = InvoiceService.delete(req.params.id);
+    const success = await InvoiceService.delete(req.params.id);
 
     if (!success) {
       return res.status(404).json({ error: 'Invoice not found' });
