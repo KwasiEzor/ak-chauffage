@@ -19,18 +19,18 @@ if (DB_TYPE === 'postgres') {
     ssl: process.env.NODE_ENV === 'production' ? {
       rejectUnauthorized: false
     } : false,
-    max: 20,
+    max: 10, // Reduced from 20 to be safer on free tiers
     idleTimeoutMillis: 30000,
-    connectionTimeoutMillis: 10000, // Increased for Render free tier
-    statement_timeout: 30000, // 30 second query timeout
-    query_timeout: 30000,
+    connectionTimeoutMillis: 60000, // Increased to 60s for slow wakeups
+    statement_timeout: 60000, // 60s
+    query_timeout: 60000,
   });
 
-  // Test connection
+  // Test connection (non-blocking, don't exit here to allow retries during migrations)
   pool.query('SELECT NOW()', (err, res) => {
     if (err) {
-      console.error('❌ PostgreSQL connection failed:', err.message);
-      process.exit(1);
+      console.error('⚠️ PostgreSQL connection test warning:', err.message);
+      console.log('   The server will still attempt to run migrations...');
     } else {
       console.log('✅ PostgreSQL connected successfully');
     }
