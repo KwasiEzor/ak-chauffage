@@ -23,6 +23,11 @@ const csrfMiddleware = (req, res, next) => {
   const safeMethods = ['GET', 'HEAD', 'OPTIONS'];
   const excludedRoutes = ['/api/auth/login', '/api/auth/logout'];
   
+  // Debug log
+  if (process.env.NODE_ENV === 'production') {
+    console.log(`CSRF Check: ${req.method} ${req.originalUrl}`);
+  }
+
   if (safeMethods.includes(req.method) || excludedRoutes.includes(req.originalUrl)) {
     // For safe methods or excluded routes, just ensure the cookie exists if missing
     if (!req.cookies || !req.cookies[SECURITY.CSRF_COOKIE_NAME]) {
@@ -45,6 +50,9 @@ const csrfMiddleware = (req, res, next) => {
   // 3. Validation
   if (!cookieToken || !headerToken || cookieToken !== headerToken) {
     console.warn(`CSRF validation failed for ${req.method} ${req.originalUrl} from ${req.ip}`);
+    console.warn(`Cookie Token: ${cookieToken ? 'Present' : 'Missing'}`);
+    console.warn(`Header Token: ${headerToken ? 'Present' : 'Missing'}`);
+    
     return res.status(403).json({
       error: 'CSRF token validation failed. Please refresh the page.',
       code: 'CSRF_ERROR'
